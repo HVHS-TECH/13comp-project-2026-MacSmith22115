@@ -1,0 +1,4 @@
+v0.0.1
+
+Log:
+    - Test Commit, added assets and src folders to file structure.
