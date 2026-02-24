@@ -1,0 +1,8 @@
+v0.0.2
+
+Log:
+    - Setup index.html structure.
+    - Setup JS and CSS folders.
+    - Setup Pages folder.
+    - Created PageManager.mjs, Page.mjs, FirebaseIO.mjs and RefrenceStorage.mjs
+    - Partially Commented FirebaseIO.mjs
