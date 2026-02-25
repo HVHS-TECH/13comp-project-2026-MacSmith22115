@@ -6,9 +6,12 @@
     <body>
         <main id="page"></main>
         <script type="module">
-            import FirebaseIO from './src/js/FirebaseIO.mjs';
-            import PageManager from './src/js/PageManager.mjs';
-            import {REFERENCES, PAGE_MANAGER_INSTANCE_KEY , FIREBASE_IO_INSTANCE_KEY} from './src/js/ReferenceStorage.mjs';
+            import FirebaseIO from './src/js/core/FirebaseIO.mjs';
+            import PageManager from './src/js/core/PageManager.mjs';
+            import LoginPage from './src/js/pages/LoginPage.mjs';
+            import {REFERENCES, PAGE_MANAGER_INSTANCE_KEY , FIREBASE_IO_INSTANCE_KEY, LOGIN_PAGE_CLASS_KEY} from './src/js/core/ReferenceStorage.mjs';
+
+            REFERENCES[LOGIN_PAGE_CLASS_KEY] = LoginPage;
 
             REFERENCES[FIREBASE_IO_INSTANCE_KEY] = new FirebaseIO({
                 apiKey: "AIzaSyCAOPnMr_-61TVbtvgW3VWvh6af_KOPYwk",
@@ -19,8 +22,8 @@
                 appId: "1:1028621260717:web:28f92cc83af73f2655f324",
                 databaseURL: "https://comp-firebase-revision-default-rtdb.firebaseio.com/"
             });
-
             REFERENCES[PAGE_MANAGER_INSTANCE_KEY] = new PageManager(document.getElementById('page'));
+            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(LoginPage)
         </script>
     </body>
 </html>

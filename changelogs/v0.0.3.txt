@@ -1,0 +1,7 @@
+v0.0.3
+
+Log:
+    - Moved FirebaseIO.mjs, PageManager.mjs & ReferenceStorage.mjs into 'core' folder.
+    - Moved Page.mjs into 'pages' folder.
+    - Created LoginPage.mjs, and made it display when first opening the site.
+    - Made 'getHTML()' and 'getId()' in 'Page.mjs' public, as private versions caused errors.
