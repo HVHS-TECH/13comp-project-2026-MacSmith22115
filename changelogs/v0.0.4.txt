@@ -1,0 +1,4 @@
+v0.0.4
+
+Log:
+    - Finished Commenting FirebaseIO.mjs, PageManager.mjs, ReferenceStorage.mjs, Page.mjs
