@@ -1,0 +1,6 @@
+v0.0.5
+
+Log:
+    - Created Homepage.
+    - Made Google Auth function.
+    - Auth via google on login page to access the Homepage.

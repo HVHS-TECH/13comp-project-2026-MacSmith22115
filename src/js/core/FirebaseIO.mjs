@@ -67,6 +67,26 @@ export default class FirebaseIO {
     }
 
     /*****************************************************************
+     * authViaGoogle();
+     * Description:
+     *    -> Auths the user via a google account.
+     *    -> Returns an object of user data
+     * Params: N/A
+     * Returns: User's Data
+     * Throws: N/A
+     * *****************************************************************/
+    async authViaGoogle(){
+        const PROVIDER = new GoogleAuthProvider();
+        PROVIDER.setCustomParameters({prompt: 'select_account'});
+        try {
+            const AUTH = await signInWithPopup(getAuth(), PROVIDER);
+            return this.#buidUserObject(AUTH.user);
+        } catch (_error){
+            console.error(`Auth Via Google Failed: ${_error}`);
+        }
+    }
+
+    /*****************************************************************
      * #getDatabase();
      * Description:
      *    -> Returns the database reference;
@@ -76,5 +96,22 @@ export default class FirebaseIO {
      * *****************************************************************/
     #getDatabase(){
         return this.#db;
+    }
+
+    /*****************************************************************
+     * #buildUserObject(_user);
+     * Description:
+     *    -> Returns the d
+     * Params:
+     *  -> '_user': Full user data captured from 'authViaGoogle()';
+     * Returns: Object containing core user info
+     * Throws: N/A
+     * *****************************************************************/
+    #buidUserObject(_user){
+        return {
+            name: _user.displayName,
+            uid: _user.uid,
+            pfp: _user.photoURL
+        }
     }
 }
