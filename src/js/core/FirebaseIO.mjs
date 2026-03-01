@@ -8,7 +8,7 @@ import {getAuth, GoogleAuthProvider, signInWithPopup, signOut} from "https://www
  * FirebaseIO.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 26/2/26
+ * Last Edited: 28/2/26
  * Description: 
  *  -> Provides a Layer of Abstraction for Handeling Database Operations
  *  -> Contains Methods for Reading, Writing & Authenticating via Google
@@ -96,6 +96,18 @@ export default class FirebaseIO {
      * *****************************************************************/
     #getDatabase(){
         return this.#db;
+    }
+
+    /*****************************************************************
+     * #getDatabase();
+     * Description:
+     *    -> Returns the database reference;
+     * Params: N/A
+     * Returns: Database Refernce
+     * Throws: N/A
+     * *****************************************************************/
+    authedUser(){
+        return this.#buidUserObject(getAuth().currentUser);
     }
 
     /*****************************************************************

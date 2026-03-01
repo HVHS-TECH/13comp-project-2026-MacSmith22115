@@ -1,0 +1,7 @@
+v0.0.6
+
+Log:
+    - Added Registration Page
+    - When logging in, if registered you go to homepage, else the registration page
+    - Registering an acount writes it to the db, and puts you on the homepage.
+    - Commented more of the code.

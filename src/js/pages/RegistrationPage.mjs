@@ -4,22 +4,21 @@ import {
     REFERENCES, 
     PAGE_MANAGER_INSTANCE_KEY, 
     FIREBASE_IO_INSTANCE_KEY, 
-    HOME_PAGE_CLASS_KEY,
-    REGISTRATION_PAGE_CLASS_KEY
+    HOME_PAGE_CLASS_KEY
 } from '../core/ReferenceStorage.mjs';
 
 /*****************************************************************
- * LoginPage.mjs
+ * RegistrationPage.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
  * Last Edited: 28/2/26
  * @extends Page
  * Description: 
- *  -> The login page, used to auth with google
+ *  -> The Registration Page collates information given and creats a user account.
  ****************************************************************/
-export default class LoginPage extends Page {
-    static #ID = 'login_page'; // Page ID
-    static #LOGIN_BUTTON_ID = 'login_button'; // ID of login button
+export default class RegistrationPage extends Page {
+    static #ID = 'registration_page'; // Page ID
+    static #REGISTER_BUTTON_ID = 'register_button'; // ID of register button
 
     /*****************************************************************
     * onDisplay();
@@ -30,31 +29,33 @@ export default class LoginPage extends Page {
     * Throws: N/A
     *****************************************************************/
     onDisplay(){
-        const LOGIN_BUTTON = document.getElementById(LoginPage.#LOGIN_BUTTON_ID);
-        LOGIN_BUTTON.onclick = () => this.attemptLogin();
+        document.getElementById(RegistrationPage.#REGISTER_BUTTON_ID).onclick = async () => {
+            const USER = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
+            this.writeAccount(USER.uid, USER.name, USER.pfp);
+        }
     }
 
     /*****************************************************************
-    * attemptLogin();
+    * writeAccount(_uid, _name, _pfp)
     * Description:
-    *   -> Authenticats your google account, and collects user data.
-    *   -> Reads database for the user's record
-    *   -> Displays Homepage, or Registrations Page, depending if record was found
-    * Params: N/A
+    *   -> Writes user's details to the database as an account
+    * Params: 
+    *   -> '_uid': User's UID.
+    *   -> '_name': User's Name.
+    *   -> '_pfp': String Link to User's Profile Picture.
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    async attemptLogin(){
-        const FIREBASE_IO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        
-        const USER = await FIREBASE_IO.authViaGoogle();
-        const USER_RECORD = await FIREBASE_IO.read(`users/${USER.uid}`);
-        
-        const PAGE_KEY = USER_RECORD != null ? HOME_PAGE_CLASS_KEY : REGISTRATION_PAGE_CLASS_KEY;
-        const PAGE_CLASS = REFERENCES[PAGE_KEY];
-        REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(PAGE_CLASS);
+    async writeAccount(_uid, _name, _pfp){
+        REFERENCES[FIREBASE_IO_INSTANCE_KEY].update(`users/${_uid}`, {
+            name: _name,
+            pfp: _pfp
+        }, () => {
+            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
+        })
     }
 
+    
     /*****************************************************************
     * getHTML();
     * Description:
@@ -66,10 +67,10 @@ export default class LoginPage extends Page {
     getHTML(){
         return `
             <div>
-                <h1 id='title'>This Is The Login Page!</h1>
-                <button id='${LoginPage.#LOGIN_BUTTON_ID}'>Login...</button>
+                <h1 id='title'>Register...</h1>
+                <button id='${RegistrationPage.#REGISTER_BUTTON_ID}'>Register...</button>
             </div>
-        `;
+        `
     }
 
     /*****************************************************************
@@ -81,6 +82,6 @@ export default class LoginPage extends Page {
     * Throws: N/A
     *****************************************************************/
     getId(){
-        return LoginPage.#ID;
+        return RegistrationPage.#ID;
     }
 }
