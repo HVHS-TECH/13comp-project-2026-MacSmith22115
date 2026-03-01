@@ -18,7 +18,7 @@ export default class Page {
         this.#element = document.createElement('section');
         this.#element.id = this.getId();
         this.#element.classList.add('page');
-        this.#element.innerHTML = this.getHTML();
+        this.#element.append(this.getHTML());
     }
 
     
@@ -90,5 +90,12 @@ export default class Page {
     *****************************************************************/
     #throwError(_error){
         throw new Error(`[Page.mjs] An Error Was Thrown: ${_error}`);
+    }
+
+    createElement(_tag, _attrubutes = {}, _children = []){
+        const ELEMENT = document.createElement(_tag);
+        Object.assign(ELEMENT, _attrubutes);
+        _children.forEach(_child => ELEMENT.append(_child));
+        return ELEMENT;
     }
 }

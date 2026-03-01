@@ -3,6 +3,7 @@ export const FIREBASE_IO_INSTANCE_KEY = 'firebase_io_instance'; // Instance of '
 export const LOGIN_PAGE_CLASS_KEY = 'login_page_class'; // Class Reference of 'LoginPage.mjs'
 export const HOME_PAGE_CLASS_KEY = 'home_page_class'; // Class Reference of 'HomePage.mjs'
 export const REGISTRATION_PAGE_CLASS_KEY = 'registration_page'; // Class Reference of 'RegistrationPage.mjs'
+export const HEARTS_LOBBY_PAGE_CLASS_KEY = 'hearts_lobby'; // Class Reference of 'HeartsLobbyBrowserPage.mjs'
 
 // Object containing references to classes, instances and data.
 export const REFERENCES = {
@@ -11,4 +12,5 @@ export const REFERENCES = {
     [LOGIN_PAGE_CLASS_KEY] : null,
     [HOME_PAGE_CLASS_KEY] : null,
     [REGISTRATION_PAGE_CLASS_KEY] : null,
+    [HEARTS_LOBBY_PAGE_CLASS_KEY] : null
 }

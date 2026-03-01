@@ -1,0 +1,5 @@
+v0.0.6
+
+Log:
+    - Added HeartsLobbyBrowserPage.mjs
+    - Changed how html is specified in each 'Page.mjs' subclass.

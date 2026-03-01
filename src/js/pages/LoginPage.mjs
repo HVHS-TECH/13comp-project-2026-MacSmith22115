@@ -17,7 +17,7 @@ import {
  * Description: 
  *  -> The login page, used to auth with google
  ****************************************************************/
-export default class LoginPage extends Page {
+export default class LoginPage extends Page {      
     static #ID = 'login_page'; // Page ID
     static #LOGIN_BUTTON_ID = 'login_button'; // ID of login button
 
@@ -64,12 +64,16 @@ export default class LoginPage extends Page {
     * Throws: N/A
     *****************************************************************/
     getHTML(){
-        return `
-            <div>
-                <h1 id='title'>This Is The Login Page!</h1>
-                <button id='${LoginPage.#LOGIN_BUTTON_ID}'>Login...</button>
-            </div>
-        `;
+        return this.createElement('div', {}, [
+            this.createElement('h1', {
+                id: 'title',
+                textContent: 'This Is The Login Page!'
+            }),
+            this.createElement('button', {
+                id: LoginPage.#LOGIN_BUTTON_ID,
+                textContent: 'Login...'
+            })
+        ])
     }
 
     /*****************************************************************

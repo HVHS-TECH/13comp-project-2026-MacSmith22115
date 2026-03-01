@@ -65,12 +65,16 @@ export default class RegistrationPage extends Page {
     * Throws: N/A
     *****************************************************************/
     getHTML(){
-        return `
-            <div>
-                <h1 id='title'>Register...</h1>
-                <button id='${RegistrationPage.#REGISTER_BUTTON_ID}'>Register...</button>
-            </div>
-        `
+        return this.createElement('div', {}, [
+            this.createElement('h1', {
+                id: 'title',
+                textContent: 'Register...'
+            }),
+            this.createElement('button', {
+                id: RegistrationPage.#REGISTER_BUTTON_ID,
+                textContent: 'Register Here'
+            })
+        ])
     }
 
     /*****************************************************************

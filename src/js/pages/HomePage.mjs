@@ -1,6 +1,11 @@
 // Imports
 import Page from './Page.mjs';
-import {REFERENCES, FIREBASE_IO_INSTANCE_KEY} from '../core/ReferenceStorage.mjs';
+import {
+    REFERENCES, 
+    FIREBASE_IO_INSTANCE_KEY, 
+    PAGE_MANAGER_INSTANCE_KEY, 
+    HEARTS_LOBBY_PAGE_CLASS_KEY
+} from '../core/ReferenceStorage.mjs';
 
 /*****************************************************************
  * HomePage.mjs
@@ -13,6 +18,7 @@ import {REFERENCES, FIREBASE_IO_INSTANCE_KEY} from '../core/ReferenceStorage.mjs
  ****************************************************************/
 export default class HomePage extends Page{
     static #ID = 'home_page'; // Page ID
+    static #HEARTS_PLAY_BUTTON_ID = 'hearts_play';
     #cache = {}; // Cached Data
 
     /*****************************************************************
@@ -38,6 +44,9 @@ export default class HomePage extends Page{
     onDisplay(){
         document.getElementById('title').innerHTML = `Hello, ${this.#cache.user.name}`
         document.getElementById('user-pfp').src = this.#cache.user.pfp;
+        document.getElementById(HomePage.#HEARTS_PLAY_BUTTON_ID).onclick = () => {
+            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY]);
+        }
     }
 
     /*****************************************************************
@@ -49,12 +58,18 @@ export default class HomePage extends Page{
     * Throws: N/A
     *****************************************************************/
     getHTML(){
-        return `
-            <div>
-                <h1 id='title'></h1>
-                <img id='user-pfp'>
-            </div>
-        `
+        return this.createElement('div', {}, [
+            this.createElement('h1', {
+                id: 'title'
+            }),
+            this.createElement('img', {
+                id: 'user-pfp'
+            }),
+            this.createElement('button', {
+                id: HomePage.#HEARTS_PLAY_BUTTON_ID,
+                textContent: 'Hearts'
+            })
+        ])
     }
 
     /*****************************************************************
