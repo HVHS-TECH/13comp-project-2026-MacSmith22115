@@ -1,55 +1,59 @@
+// Imports
 import Page from "./Page.mjs";
 import {
     REFERENCES,
     PAGE_MANAGER_INSTANCE_KEY,
-    FIREBASE_IO_INSTANCE_KEY,
-    HOME_PAGE_CLASS_KEY,
-    REGISTRATION_PAGE_CLASS_KEY,
+    HEARTS_LOBBY_PAGE_CLASS_KEY
 } from "../core/ReferenceStorage.mjs";
+import LobbySession from "../game/LobbySession.mjs";
 
+/*****************************************************************
+ * HeartsLobbyBrowserPage.mjs
+ * @author MacSmith22115
+ * Created: Term #1 2026
+ * Last Edited: 2/3/26
+ * @extends Page
+ * Description: 
+ *  -> Acts as a lobby browser for 'Hearts'
+ *  -> Either join or create a lobby
+ ****************************************************************/
 export default class HeartsLobbyBrowserPage extends Page {
     static #ID = "hearts_lobby";
     static #CREATE_LOBBY_BUTTON_ID = "create-lobby-button";
-    #serverId = null;
-    #serverCache = null;
+    static #JOIN_LOBBY_BUTTON_ID = 'join-lobby-button';
 
-    #createServer() {
-        const SERVER_UID = crypto.randomUUID();
-        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        const PLAYER_UID = FBIO.authedUser();
-        FBIO.update(
-            `servers`,
-            {
-                [SERVER_UID]: {
-                    players: [PLAYER_UID],
-                    turn: PLAYER_UID,
-                },
-            },
-            () => {
-                this.#cacheServer();
-            },
-        );
-    }
-
-    #joinServer(_serverId) {
-        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        const SERVER = FBIO.read(`servers/${_serverId}`);
-    }
-
-    async #cacheServer() {
-        if (this.#serverId != null) {
-            this.#serverCache = await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read(
-                `servers/${this.#serverId}`,
-            );
+    /*****************************************************************
+    * onDisplay();
+    * Description:
+    *   -> Runs Code on the page being displayed
+    * Params: N/A
+    * Returns: N/A
+    * Throws: N/A
+    *****************************************************************/
+    onDisplay() {
+        document.getElementById(HeartsLobbyBrowserPage.#CREATE_LOBBY_BUTTON_ID).onclick = async () => {
+            const LOBBY_SESSION = new LobbySession();
+            LOBBY_SESSION.createLobby(() => {
+                REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY]);
+            });
+        };
+        document.getElementById(HeartsLobbyBrowserPage.#JOIN_LOBBY_BUTTON_ID).onclick = async () => {
+            const LOBBY_SESSION = new LobbySession();
+            const LOBBY_UID = prompt('Enter Target Lobby Id');
+            LOBBY_SESSION.joinLobby(LOBBY_UID, () => {
+                REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY]);
+            })
         }
     }
 
-    onDisplay() {
-        document.getElementById(
-            HeartsLobbyBrowserPage.#CREATE_LOBBY_BUTTON_ID,
-        ).onclick = () => {};
-    }
-
+    /*****************************************************************
+    * getHTML();
+    * Description:
+    *   -> Returns a string containing HTML tags
+    * Params: N/A
+    * Returns: String of HTML tags
+    * Throws: N/A
+    *****************************************************************/
     getHTML() {
         return this.createElement("div", {}, [
             this.createElement("h1", {
@@ -60,9 +64,21 @@ export default class HeartsLobbyBrowserPage extends Page {
                 id: HeartsLobbyBrowserPage.#CREATE_LOBBY_BUTTON_ID,
                 textContent: "Create Lobby",
             }),
+            this.createElement("button", {
+                id: HeartsLobbyBrowserPage.#JOIN_LOBBY_BUTTON_ID,
+                textContent: 'Join Lobby'
+            })
         ]);
     }
 
+    /*****************************************************************
+    * getId();
+    * Description:
+    *   -> Returns a string ID of the page
+    * Params: N/A
+    * Returns: String ID
+    * Throws: N/A
+    *****************************************************************/
     getId() {
         return HeartsLobbyBrowserPage.#ID;
     }

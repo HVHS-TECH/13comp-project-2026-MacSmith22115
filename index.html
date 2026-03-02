@@ -12,6 +12,8 @@
             import HomePage from './src/js/pages/HomePage.mjs';
             import RegistrationPage from './src/js/pages/RegistrationPage.mjs';
             import HeartsLobbyBrowserPage from './src/js/pages/HeartsLobbyBrowserPage.mjs';
+            import HeartsLobbyPage from './src/js/pages/HeartsLobbyPage.mjs';
+            import HeartsGamePage from './src/js/pages/HeartsGamePage.mjs';
             import {
                 REFERENCES, 
                 PAGE_MANAGER_INSTANCE_KEY, 
@@ -19,13 +21,17 @@
                 LOGIN_PAGE_CLASS_KEY, 
                 HOME_PAGE_CLASS_KEY,
                 REGISTRATION_PAGE_CLASS_KEY,
-                HEARTS_LOBBY_PAGE_CLASS_KEY
+                HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY,
+                HEARTS_LOBBY_PAGE_CLASS_KEY,
+                HEARTS_GAME_PAGE_CLASS_KEY
             } from './src/js/core/ReferenceStorage.mjs';
 
             REFERENCES[LOGIN_PAGE_CLASS_KEY] = LoginPage;
             REFERENCES[HOME_PAGE_CLASS_KEY] = HomePage;
             REFERENCES[REGISTRATION_PAGE_CLASS_KEY] = RegistrationPage;
-            REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY]= HeartsLobbyBrowserPage;
+            REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY]= HeartsLobbyBrowserPage;
+            REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY] = HeartsLobbyPage;
+            REFERENCES[HEARTS_GAME_PAGE_CLASS_KEY] = HeartsGamePage;
             REFERENCES[FIREBASE_IO_INSTANCE_KEY] = new FirebaseIO({
                 apiKey: "AIzaSyCAOPnMr_-61TVbtvgW3VWvh6af_KOPYwk",
                 authDomain: "comp-firebase-revision.firebaseapp.com",

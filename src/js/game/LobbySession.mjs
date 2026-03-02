@@ -1,0 +1,68 @@
+import {
+    REFERENCES,
+    FIREBASE_IO_INSTANCE_KEY,
+    LOBBY_SESSION_INSTANCE_KEY
+} from "../core/ReferenceStorage.mjs";
+
+export default class LobbySession {
+    #cache = {};
+    #lobbyId;
+    #state; 
+    #firebaseListeners;
+
+    async createLobby(_callback = null){
+        const LOBBY_UUID = crypto.randomUUID();
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const PLAYER_UID = FBIO.authedUser().uid;
+        await FBIO.update(`lobbies`, {
+            [LOBBY_UUID] : {
+                players: [PLAYER_UID],
+                flags : {
+                    gameStarted : false,
+                    lobbyOpen : true
+                }
+            }
+        }, () => {
+            this.#lobbyId = LOBBY_UUID;
+            this.generateCache();
+            REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = this;
+            if (_callback) _callback();
+        });
+    }
+
+    async joinLobby(_id, _callback = null){
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = await FBIO.read(`lobbies/${_id}`);
+        if (LOBBY != null){ 
+            const PLAYERS = LOBBY.players != null ? Object.values(LOBBY.players) : [];
+            PLAYERS.push(FBIO.authedUser().uid);
+            await FBIO.update(`lobbies/${_id}`, {
+                players: PLAYERS
+            }, () => {
+                this.#lobbyId = _id;
+                this.generateCache();
+                REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = this;
+                if (_callback) _callback();
+            })
+        }
+    }
+
+    isMyTurn(){
+        return this.getLobbyCache().turn == REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser().uid;
+    }
+
+    async generateCache(){
+        if (this.#lobbyId != null){
+            this.#cache.lobby = await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read(`lobbies/${this.#lobbyId}`);
+            console.log('Cached Lobby');
+        }
+    }
+
+    getLobbyCache(){
+        return this.#cache.lobby;
+    }
+
+    getLobbyId(){
+        return this.#lobbyId;
+    }
+}

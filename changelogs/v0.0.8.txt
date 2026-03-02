@@ -1,0 +1,10 @@
+v0.0.8
+
+Log:
+    - Created 'LobbySession.mjs' as a persistent storage across pages for game/lobby data.
+    - Created 'HeartsLobbyPage.mjs'
+    - Added ability to create or join lobbies.
+    - Commented more files
+    - Added ability to register/unregister event listeners to the database
+    - Added 'Utils.mjs', containing static utility methods.
+    - Added Hearts Lobby Browser, with a functional turn-taking system.

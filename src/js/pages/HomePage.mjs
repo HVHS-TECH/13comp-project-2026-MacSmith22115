@@ -4,14 +4,14 @@ import {
     REFERENCES, 
     FIREBASE_IO_INSTANCE_KEY, 
     PAGE_MANAGER_INSTANCE_KEY, 
-    HEARTS_LOBBY_PAGE_CLASS_KEY
+    HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY
 } from '../core/ReferenceStorage.mjs';
 
 /*****************************************************************
  * HomePage.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 28/2/26
+ * Last Edited: 2/3/26
  * @extends Page
  * Description: 
  *  -> Used to access games, profile details, and more
@@ -45,7 +45,7 @@ export default class HomePage extends Page{
         document.getElementById('title').innerHTML = `Hello, ${this.#cache.user.name}`
         document.getElementById('user-pfp').src = this.#cache.user.pfp;
         document.getElementById(HomePage.#HEARTS_PLAY_BUTTON_ID).onclick = () => {
-            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY]);
+            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY]);
         }
     }
 

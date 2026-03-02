@@ -8,7 +8,7 @@ import {getAuth, GoogleAuthProvider, signInWithPopup, signOut} from "https://www
  * FirebaseIO.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 28/2/26
+ * Last Edited: 2/3/26
  * Description: 
  *  -> Provides a Layer of Abstraction for Handeling Database Operations
  *  -> Contains Methods for Reading, Writing & Authenticating via Google
@@ -84,6 +84,57 @@ export default class FirebaseIO {
         } catch (_error){
             console.error(`Auth Via Google Failed: ${_error}`);
         }
+    }
+
+    /*****************************************************************
+     * registerListeners(_listeners);
+     * Description:
+     *    -> Recursivly registers listeners on to the database
+     *    -> Listeners are called when data at their path is changed
+     * Params: '_listeners': Object containing paths (field), mapped to a listener callback (value);
+     * Returns: Array of registered Listeners, used to unregister listeners later.
+     * Throws: N/A
+     * *****************************************************************/
+    registerListeners(_listeners){
+        const REGISTERED_LISTENERS = [];
+        for (const [_path, _listener] of Object.entries(_listeners)){
+            const REF = ref(this.#getDatabase(), _path);
+            try {
+                const WRAPPER = (_data) => _listener(_data.exists() ? _data.val() : null);
+                onValue(REF, WRAPPER);
+                REGISTERED_LISTENERS.push({
+                    ref: REF,
+                    listener: WRAPPER,
+                    type: 'value',
+                    path: _path,
+                    initialized: false
+                })
+            } catch (_error){
+                console.error(`Error Registering Firebase Listner @ ${_path}: ${_error}`);
+            }
+        };
+        return REGISTERED_LISTENERS;
+    }
+
+    /*****************************************************************
+     * unregisterListeners(_listeners);
+     * Description:
+     *    -> Recursivly unregisters database listeners.
+     * Params: '_listeners': Array containing listeners as objects
+     * Returns: N/A
+     * Throws: N/A
+     * *****************************************************************/
+    unregisterListeners(_listeners){
+        _listeners.forEach(_wrapper => {
+            try {
+                if (_wrapper.ref && _wrapper.listener && _wrapper.type){
+                    off(_wrapper.ref, _wrapper.type, _wrapper.listener)
+                }
+            } catch (_error){
+                console.error(`Error Unregistering Firebase Listener @ ${_wrapper.path}: ${_error}`);
+            }
+
+        })
     }
 
     /*****************************************************************
