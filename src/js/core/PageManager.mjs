@@ -2,7 +2,7 @@
  * PageManager.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 26/2/26
+ * Last Edited: 7/3/26
  * Description: 
  *  -> Provides Methods for managing the display of pages.
  *  -> Tracks currently displayed pages.
@@ -12,14 +12,14 @@ export default class PageManager {
 
     // Currently Displayed Pages
     #displayedPages = {
-        main : null,
-        sub : []
+        main: null,
+        sub: []
     }
 
     /*****************************************************************
     * @param {HTMLElement} _rootElement - HTML Element to append pages to
     *****************************************************************/
-    constructor(_rootElement){
+    constructor(_rootElement) {
         this.#rootElement = _rootElement;
     }
 
@@ -34,14 +34,14 @@ export default class PageManager {
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    async displayPage(_class){
+    async displayPage(_class) {
         const PAGE = new _class();
         await PAGE.preDisplay();
-        if (!PAGE.isSubPage()){
-            if (this.getMainPage()){
+        if (!PAGE.isSubPage()) {
+            if (this.getMainPage()) {
                 await this.getMainPage().remove();
             }
-            for (const subpage of this.getSubPages()){
+            for (const subpage of this.getSubPages()) {
                 await subpage.remove();
             }
             this.#displayedPages.main = PAGE;
@@ -56,7 +56,7 @@ export default class PageManager {
      * Returns: Currently displayed main page
      * Throws: N/A
     *****************************************************************/
-    getMainPage(){
+    getMainPage() {
         return this.#getDisplayedPages().main;
     }
 
@@ -67,7 +67,7 @@ export default class PageManager {
      * Returns: Array of Subpages
      * Throws: N/A
     *****************************************************************/
-    getSubPages(){
+    getSubPages() {
         return this.#getDisplayedPages().sub;
     }
 
@@ -79,7 +79,7 @@ export default class PageManager {
      * Returns: HTML Element
      * Throws: N/A
     *****************************************************************/
-    getElement(_id){
+    getElement(_id) {
         return document.getElementById(_id);
     }
 
@@ -90,7 +90,7 @@ export default class PageManager {
      * Returns: All the currently displayed pages
      * Throws: N/A
     *****************************************************************/
-    #getDisplayedPages(){
+    #getDisplayedPages() {
         return this.#displayedPages;
     }
 }

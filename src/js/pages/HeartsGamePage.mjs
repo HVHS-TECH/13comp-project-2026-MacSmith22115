@@ -10,6 +10,7 @@ export default class HeartsGamePage extends Page {
     static #ID = 'hearts-game-page';
     static #PLAY_CARD_BUTTON_ID = 'play-card-button';
     static #TURN_TITLE = 'turn-title';
+    static #CARDS_LIST_ID = 'cards-list';
     #firebaseListeners;
 
     playCard(){
@@ -41,6 +42,13 @@ export default class HeartsGamePage extends Page {
     onDisplay(){
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const HAND = Object.values(LOBBY.getLobbyCache().hands[FBIO.authedUser().uid]);
+        const LIST_ELEMENT = document.getElementById(HeartsGamePage.#CARDS_LIST_ID);
+        HAND.forEach(_card => {
+            LIST_ELEMENT.appendChild(this.createElement('li', {
+                textContent: _card
+            }))
+        });
 
         this.#firebaseListeners = FBIO.registerListeners({
             [`lobbies/${LOBBY.getLobbyId()}/turn`] : async (_data) => {
@@ -67,6 +75,9 @@ export default class HeartsGamePage extends Page {
             }),
             this.createElement('h1', {
                 id: HeartsGamePage.#TURN_TITLE
+            }),
+            this.createElement('ul', {
+                id: HeartsGamePage.#CARDS_LIST_ID
             })
         ])
     }

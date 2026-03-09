@@ -1,0 +1,9 @@
+v0.0.9
+
+Log:
+    - Created 'Deck.mjs', with methods for shuffling and dealing
+    - Created 'Card.mjs', Unused as of now.
+    - Implemented Deck creation and hand assiging when starting Hearts game.
+    - Commented more classes.
+    - Corrected Typo in method name 'buildUserObject';
+    - Card Logic is currently broken

@@ -14,6 +14,8 @@
             import HeartsLobbyBrowserPage from './src/js/pages/HeartsLobbyBrowserPage.mjs';
             import HeartsLobbyPage from './src/js/pages/HeartsLobbyPage.mjs';
             import HeartsGamePage from './src/js/pages/HeartsGamePage.mjs';
+            import Deck from "./src/js/game/Deck.mjs";
+            import Card from "./src/js/game/Card.mjs";
             import {
                 REFERENCES, 
                 PAGE_MANAGER_INSTANCE_KEY, 
@@ -43,6 +45,8 @@
             });
             REFERENCES[PAGE_MANAGER_INSTANCE_KEY] = new PageManager(document.getElementById('page'));
             REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(LoginPage);
+            await Card.loadTemplates();
+            console.log(Card.getTemplate('ha'));
         </script>
     </body>
 </html>

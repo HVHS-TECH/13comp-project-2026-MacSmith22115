@@ -80,7 +80,7 @@ export default class FirebaseIO {
         PROVIDER.setCustomParameters({prompt: 'select_account'});
         try {
             const AUTH = await signInWithPopup(getAuth(), PROVIDER);
-            return this.#buidUserObject(AUTH.user);
+            return this.#buildUserObject(AUTH.user);
         } catch (_error){
             console.error(`Auth Via Google Failed: ${_error}`);
         }
@@ -158,7 +158,7 @@ export default class FirebaseIO {
      * Throws: N/A
      * *****************************************************************/
     authedUser(){
-        return this.#buidUserObject(getAuth().currentUser);
+        return this.#buildUserObject(getAuth().currentUser);
     }
 
     /*****************************************************************
@@ -170,7 +170,7 @@ export default class FirebaseIO {
      * Returns: Object containing core user info
      * Throws: N/A
      * *****************************************************************/
-    #buidUserObject(_user){
+    #buildUserObject(_user){
         return {
             name: _user.displayName,
             uid: _user.uid,

@@ -9,13 +9,14 @@ import {
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 import HeartsGamePage from "./HeartsGamePage.mjs";
+import Deck from "../game/Deck.mjs";
 
 
 /*****************************************************************
  * HeartsLobbyPage.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 2/3/26
+ * Last Edited: 7/3/26
  * @extends Page
  * Description: 
  *  -> Acts as an intermediatry page between the lobby browser and game of 'Hearts
@@ -29,13 +30,30 @@ export default class HeartsLobbyPage extends Page{
     writeGameLobby(){
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const DECK = new Deck(...[1, 2, 3, 4, 5, 6, 7, 8,]);
+        const PLAYERS = (Object.values(LOBBY.getLobbyCache().players));
+        const HANDS = this.assignHands(DECK.deal(PLAYERS.length, true).hands, PLAYERS);
         FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
             turn: FBIO.authedUser().uid,
             flags: {
                 gameStarted: true,
                 lobbyOpen: false
-            }
+            },
+            hands: HANDS
         })
+    }
+
+    assignHands(_hands, _players){
+         if (_hands.length != _players.length){
+             throw new Error(`Player-Hand Count Missmatch`);
+        }
+        const RESULT = {};
+        _hands.forEach(_hand => {
+            const INDEX = _hands.indexOf(_hand);
+            const PLAYER = _players[INDEX];
+            RESULT[PLAYER] = _hand;
+        })
+        return RESULT;
     }
 
     /*****************************************************************
