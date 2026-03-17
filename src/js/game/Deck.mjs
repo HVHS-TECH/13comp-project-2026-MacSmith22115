@@ -58,6 +58,25 @@ export default class Deck {
     * Throws: N/A
     *****************************************************************/
     #dealEqual(_count){
+        const HANDS = Array.from({length: _count}, () => ({}));
+        const TOTAL_CARDS = this.size();
+        const PER_HAND = Math.floor(TOTAL_CARDS / _count);
+        const REMAINDER_COUNT = TOTAL_CARDS % _count;
+        for (let dealRound = 0; dealRound < PER_HAND; dealRound++){
+            for (let playerIndex = 0; playerIndex < _count; playerIndex++){
+                const CARD = this.drawCard();
+                HANDS[playerIndex][CARD] = CARD;
+            }
+        }
+        const REMAINDER_CARDS = [];
+        for (let i = 0; i < REMAINDER_COUNT; i++){
+            REMAINDER_CARDS.push(this.drawCard());
+        }
+        return {hands: HANDS, remainder: REMAINDER_CARDS};
+    }
+
+    /*
+    #dealEqual(_count){
         const HANDS = Array.from({length: _count}, () => []);
         const TOTAL_CARDS = this.size();
         const PER_HAND = Math.floor(TOTAL_CARDS / _count);
@@ -72,7 +91,7 @@ export default class Deck {
             REMAINDER_CARDS.push(...this.drawCards(1));
         }
         return {hands: HANDS, remainder: REMAINDER_CARDS};
-    }
+    }*/
 
     /*****************************************************************
     * #dealAll(_count);
@@ -83,10 +102,11 @@ export default class Deck {
     * Throws: N/A
     *****************************************************************/
     #dealAll(_count){
-        const HANDS = Array.from({length: _count}, () => []);
+        const HANDS = Array.from({length: _count}, () => ({}));
         let playerIndex = 0;
         while(!this.isEmpty()){
-            HANDS[playerIndex].push(...this.drawCards(1));
+            const CARD = this.drawCard();
+            HANDS[playerIndex][CARD] = CARD;
             playerIndex = (playerIndex + 1) % _count;
         }
         return {hands: HANDS, remainder: []};
@@ -106,6 +126,18 @@ export default class Deck {
             CARDS.push(this.#cards.pop());
         }
         return CARDS;
+    }
+
+    /*****************************************************************
+    * drawCard();
+    * Description:
+    *   -> Draws The Top card on the deck.
+    * Params: N/A
+    * Returns: Top Card of the deck
+    * Throws: N/A
+    *****************************************************************/
+    drawCard(){
+        return this.drawCards(1)[0];
     }
 
     /*****************************************************************

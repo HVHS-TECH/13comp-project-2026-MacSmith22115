@@ -10,6 +10,7 @@ import {
 import Utils from "../core/Utils.mjs";
 import HeartsGamePage from "./HeartsGamePage.mjs";
 import Deck from "../game/Deck.mjs";
+import Card from "../game/Card.mjs";
 
 
 /*****************************************************************
@@ -30,11 +31,11 @@ export default class HeartsLobbyPage extends Page{
     writeGameLobby(){
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        const DECK = new Deck(...[1, 2, 3, 4, 5, 6, 7, 8,]);
+        const DECK = new Deck(...Card.TEMPLATES.map(_card => _card.id));
         const PLAYERS = (Object.values(LOBBY.getLobbyCache().players));
         const HANDS = this.assignHands(DECK.deal(PLAYERS.length, true).hands, PLAYERS);
         FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
-            turn: FBIO.authedUser().uid,
+            turn: PLAYERS[0],
             flags: {
                 gameStarted: true,
                 lobbyOpen: false

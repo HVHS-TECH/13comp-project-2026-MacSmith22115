@@ -1,0 +1,6 @@
+v0.0.10
+
+Log:
+    - Rewrote Deck Dealing Logic
+    - Added 'getKeyByValue' to Utils.mjs
+    - Implemented rounds, card playing, winning cards, scoring and turns to hearts.

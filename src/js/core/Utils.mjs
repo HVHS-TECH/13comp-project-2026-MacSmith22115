@@ -44,4 +44,18 @@ export default class Utils {
             console.error(`Failed To Fetch Or Parse JSON @ ${_path}: ${_error}`);
         }
     }
-}
+
+     /*****************************************************************
+    * getKeyByValue(_path);
+    * Description:
+    *   -> Finds the key associated with a given value in an object.
+    * Params: 
+    *   -> '_object': Object to search
+    *   -> '_value': Value associated with key to find
+    * Returns: Key associated with the given value
+    * Throws: N/A
+    *****************************************************************/
+    static async getKeyByValue(_object, _value){
+        return Object.keys(_object).find(_key => _object[_key] == _value);
+    }
+}   

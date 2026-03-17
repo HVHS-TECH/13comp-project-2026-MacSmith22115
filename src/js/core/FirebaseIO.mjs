@@ -66,6 +66,16 @@ export default class FirebaseIO {
         }
     }
 
+    async remove(_path, _callback = null){
+        try {
+            const REF = ref(this.#getDatabase(), _path);
+            remove(REF, _path);
+            if (_callback) _callback();
+        } catch (_error){
+            console.error(`Error Removing Data @ ${_path}: ${_error}`);
+        }
+    }
+
     /*****************************************************************
      * authViaGoogle();
      * Description:

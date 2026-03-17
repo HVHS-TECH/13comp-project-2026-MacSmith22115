@@ -67,6 +67,18 @@ export default class LobbySession {
         }
     }
 
+    async getRoundData(){
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = await FBIO.read(`lobbies/${this.getLobbyId()}`);
+        return LOBBY.roundData != null ? LOBBY.roundData : {};
+    }
+
+    async getPoints(){
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = await FBIO.read(`lobbies/${this.getLobbyId()}`);
+        return LOBBY.points != null ? LOBBY.points : {};
+    }
+
     isMyTurn(){
         return this.getLobbyCache().turn == REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser().uid;
     }

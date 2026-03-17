@@ -97,14 +97,10 @@ export default class Card {
             });
             
         }
-        console.log(CARDS);
-
         CARDS.forEach(_card => {
             let id = _card.id;
             REFERENCES[FIREBASE_IO_INSTANCE_KEY].update('/cards', {
                 [id]: _card
-            }, () => {
-                console.log('wrote Cards');
             })
         }) 
     }
@@ -114,9 +110,8 @@ export default class Card {
     }
 
     static getTemplate(_id){
-        console.log(Card.TEMPLATES);
         return Card.TEMPLATES.find(_card => {
-            _card.id == _id;
+            return _card.id == _id;
         });
     }
 
@@ -132,7 +127,10 @@ export default class Card {
         return this.#value
     }
     
-    compare(){
-
+    compare(_cardA, _cardB){
+        const A_VAL = _cardA.getValue();
+        const A_SUIT = _cardA.getSuit();
+        const B_VAL = _cardB.getValue();
+        const B_SUIT = _cardB.getSuit();
     }
 }
