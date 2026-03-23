@@ -2,7 +2,9 @@ import Page from "./Page.mjs";
 import {
     REFERENCES,
     FIREBASE_IO_INSTANCE_KEY,
-    LOBBY_SESSION_INSTANCE_KEY
+    LOBBY_SESSION_INSTANCE_KEY,
+    PAGE_MANAGER_INSTANCE_KEY,
+    HOME_PAGE_CLASS_KEY
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 import Card from "../game/Card.mjs";
@@ -13,6 +15,7 @@ export default class HeartsGamePage extends Page {
     static #TURN_TITLE = 'turn-title';
     static #HAND_LIST_ID = 'hand-list';
     static #PLAYED_CARDS_LIST_ID = 'played_cards_list';
+    static #CLOSE_LOBBY_BUTTON_ID = 'close_lobby_button';
     #firebaseListeners;
 
     playCard(_card){
@@ -177,10 +180,19 @@ export default class HeartsGamePage extends Page {
         }
     }
 
+    onDisconnect(){
+        REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
+        REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = null;
+    }
+
     onDisplay(){
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         this.#firebaseListeners = FBIO.registerListeners({
+            [`lobbies/${LOBBY.getLobbyId()}`] : async (_data) => {
+                if (_data != null) return;
+                this.onDisconnect();
+            },
             [`lobbies/${LOBBY.getLobbyId()}/turn`] : async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null) return;
@@ -211,6 +223,13 @@ export default class HeartsGamePage extends Page {
             }),
             this.createElement('ul', {
                 id:HeartsGamePage.#PLAYED_CARDS_LIST_ID
+            }),
+            this.createElement('button', {
+                id:HeartsGamePage.#CLOSE_LOBBY_BUTTON_ID,
+                textContent: "Exit Lobby",
+                onclick: async () => {
+                    await REFERENCES[LOBBY_SESSION_INSTANCE_KEY].closeLobby();
+                }
             })
         ])
     }

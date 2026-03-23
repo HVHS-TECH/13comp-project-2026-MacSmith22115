@@ -67,6 +67,11 @@ export default class LobbySession {
         }
     }
 
+    async closeLobby(){
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        FBIO.remove(`lobbies/${this.getLobbyId()}`);
+    }
+
     async getRoundData(){
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = await FBIO.read(`lobbies/${this.getLobbyId()}`);
