@@ -1,0 +1,5 @@
+v0.0.12
+
+Log:
+    - Commit to update github pages. 
+    - NO CODEBASE CHANGES.
