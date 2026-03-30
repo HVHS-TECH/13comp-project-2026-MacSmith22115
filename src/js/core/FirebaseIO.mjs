@@ -57,7 +57,7 @@ export default class FirebaseIO {
     * Throws: N/A
     *****************************************************************/
     async read(_path){
-        try {
+        try { 
             const REF = ref(this.#getDatabase(), _path);
             const SNAPSHOT = await get(REF);
             return SNAPSHOT.exists() ? SNAPSHOT.val() : null;

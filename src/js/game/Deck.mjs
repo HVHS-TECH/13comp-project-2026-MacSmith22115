@@ -74,25 +74,7 @@ export default class Deck {
         }
         return {hands: HANDS, remainder: REMAINDER_CARDS};
     }
-
-    /*
-    #dealEqual(_count){
-        const HANDS = Array.from({length: _count}, () => []);
-        const TOTAL_CARDS = this.size();
-        const PER_HAND = Math.floor(TOTAL_CARDS / _count);
-        const REMAINDER_COUNT = TOTAL_CARDS % _count;
-        for (let dealRound = 0; dealRound < PER_HAND; dealRound++){
-            for (let playerIndex = 0; playerIndex < _count; playerIndex++){;
-                HANDS[playerIndex].push(...this.drawCards(1));
-            }
-        }
-        const REMAINDER_CARDS = [];
-        for (let i = 0; i < REMAINDER_COUNT; i++){
-            REMAINDER_CARDS.push(...this.drawCards(1));
-        }
-        return {hands: HANDS, remainder: REMAINDER_CARDS};
-    }*/
-
+    
     /*****************************************************************
     * #dealAll(_count);
     * Description:

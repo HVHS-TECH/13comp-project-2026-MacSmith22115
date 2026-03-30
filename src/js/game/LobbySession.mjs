@@ -4,7 +4,7 @@ import {
     FIREBASE_IO_INSTANCE_KEY,
     LOBBY_SESSION_INSTANCE_KEY
 } from "../core/ReferenceStorage.mjs";
-
+import Utils from "../core/Utils.mjs";
 /*****************************************************************
  * LobbySession.mjs
  * @author MacSmith22115
@@ -75,13 +75,28 @@ export default class LobbySession {
     async getRoundData(){
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = await FBIO.read(`lobbies/${this.getLobbyId()}`);
-        return LOBBY.roundData != null ? LOBBY.roundData : {};
+        return LOBBY.roundData ?? {};
     }
 
-    async getPoints(){
+    async getPoints(_sorted = false){
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        const LOBBY = await FBIO.read(`lobbies/${this.getLobbyId()}`);
-        return LOBBY.points != null ? LOBBY.points : {};
+        let points = (await FBIO.read(`lobbies/${this.getLobbyId()}/points`)) ?? {};
+
+        if (_sorted) {
+            if (!Utils.isObjEmpty(points)){
+                points = Object.entries(points).map(([player, score]) => ({player, score}));
+                points = Utils.sortObjsAscending(points, 'score');
+                console.log(points);
+            }
+        }
+        return points;
+    }
+
+    async markGameOver(_fbio){
+        await this.getLobbyCache();
+        await _fbio.update(`lobbies/${this.getLobbyId()}/flags`, {
+            gameOver: true   
+        })
     }
 
     isMyTurn(){

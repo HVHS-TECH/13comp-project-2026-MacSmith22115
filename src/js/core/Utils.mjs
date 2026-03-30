@@ -58,4 +58,16 @@ export default class Utils {
     static async getKeyByValue(_object, _value){
         return Object.keys(_object).find(_key => _object[_key] == _value);
     }
+
+    static sortObjsAscending(_array, _field){
+        return _array.sort((_a, _b) => _a[_field] - _b[_field]);
+    }
+
+    static isObjEmpty(_obj){
+        return Object.keys(_obj).length === 0;
+    }
+
+    static objToArr(_obj){
+        return Object.entries(_obj).map(([_key, _value]) => ({_key, _value}));
+    }
 }   

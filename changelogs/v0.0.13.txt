@@ -1,0 +1,5 @@
+v0.0.13
+
+Log:
+    - Added scoring logic (gasp it was painful and took a while);
+    - other things

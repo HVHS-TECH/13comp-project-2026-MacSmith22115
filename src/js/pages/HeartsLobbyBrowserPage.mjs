@@ -26,7 +26,8 @@ export default class HeartsLobbyBrowserPage extends Page {
     /*****************************************************************
     * onDisplay();
     * Description:
-    *   -> Runs Code on the page being displayed
+    *   -> Runs Initalization Code on the page being displayed
+    *   -> Used to assign onclicks to buttons, and fill out the list of lobbies.
     * Params: N/A
     * Returns: N/A
     * Throws: N/A
@@ -44,7 +45,7 @@ export default class HeartsLobbyBrowserPage extends Page {
             LOBBY_LIST.lastChild.remove();
         }
         const SERVERS = await FBIO.read(`/lobbies`);
-        if (SERVERS) {
+        if (SERVERS != null) {
             for (const [_serverId, _serverData] of Object.entries(SERVERS)) {
                 LOBBY_LIST.appendChild(this.createElement('button', {
                     textContent: _serverId,
