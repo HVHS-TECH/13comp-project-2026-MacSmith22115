@@ -6,6 +6,8 @@ export const REGISTRATION_PAGE_CLASS_KEY = 'registration_page'; // Class Referen
 export const HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY = 'hearts_lobby_browser'; // Class Reference of 'HeartsLobbyBrowserPage.mjs'
 export const HEARTS_LOBBY_PAGE_CLASS_KEY = 'hearts_lobby'; // Class Reference of 'HeartsLobbyPage.mjs'
 export const HEARTS_GAME_PAGE_CLASS_KEY = 'hearts_game'; // Class Reference of 'HeartsGamePage.mjs'
+export const HEARTS_ROUND_OVER_PAGE_CLASS_KEY = 'hearts_round_over'; // Class Reference of 'HeartsRoundOverPage.mjs'
+export const HEARTS_MATCH_OVER_PAGE_CLASS_KEY = 'hearts_match_round_over'; // Class Reference of 'HeartsRoundOverPage.mjs'
 
 export const LOBBY_SESSION_INSTANCE_KEY = 'lobby_session_instance'; // Instance of 'GameSession.mjs'
 
@@ -19,5 +21,7 @@ export const REFERENCES = {
     [HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY] : null,
     [HEARTS_LOBBY_PAGE_CLASS_KEY] : null,
     [HEARTS_GAME_PAGE_CLASS_KEY] : null,
-    [LOBBY_SESSION_INSTANCE_KEY] : null
+    [LOBBY_SESSION_INSTANCE_KEY] : null,
+    [HEARTS_ROUND_OVER_PAGE_CLASS_KEY] : null,
+    [HEARTS_MATCH_OVER_PAGE_CLASS_KEY] : null
 }

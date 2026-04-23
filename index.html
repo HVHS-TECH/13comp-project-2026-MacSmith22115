@@ -14,6 +14,8 @@
             import HeartsLobbyBrowserPage from './src/js/pages/HeartsLobbyBrowserPage.mjs';
             import HeartsLobbyPage from './src/js/pages/HeartsLobbyPage.mjs';
             import HeartsGamePage from './src/js/pages/HeartsGamePage.mjs';
+            import HeartsRoundOverPage from './src/js/pages/HeartsRoundOverPage.mjs';
+            import HeartsMatchOverPage from './src/js/pages/HeartsMatchOverPage.mjs';
             import Deck from "./src/js/game/Deck.mjs";
             import Card from "./src/js/game/Card.mjs";
             import {
@@ -25,7 +27,9 @@
                 REGISTRATION_PAGE_CLASS_KEY,
                 HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY,
                 HEARTS_LOBBY_PAGE_CLASS_KEY,
-                HEARTS_GAME_PAGE_CLASS_KEY
+                HEARTS_GAME_PAGE_CLASS_KEY,
+                HEARTS_ROUND_OVER_PAGE_CLASS_KEY,
+                HEARTS_MATCH_OVER_PAGE_CLASS_KEY
             } from './src/js/core/ReferenceStorage.mjs';
 
             REFERENCES[LOGIN_PAGE_CLASS_KEY] = LoginPage;
@@ -34,6 +38,8 @@
             REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY]= HeartsLobbyBrowserPage;
             REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY] = HeartsLobbyPage;
             REFERENCES[HEARTS_GAME_PAGE_CLASS_KEY] = HeartsGamePage;
+            REFERENCES[HEARTS_ROUND_OVER_PAGE_CLASS_KEY] = HeartsRoundOverPage;
+            REFERENCES[HEARTS_MATCH_OVER_PAGE_CLASS_KEY] = HeartsMatchOverPage;
             REFERENCES[FIREBASE_IO_INSTANCE_KEY] = new FirebaseIO({
                 apiKey: "AIzaSyCAOPnMr_-61TVbtvgW3VWvh6af_KOPYwk",
                 authDomain: "comp-firebase-revision.firebaseapp.com",

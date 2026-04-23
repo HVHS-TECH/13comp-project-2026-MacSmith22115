@@ -4,16 +4,19 @@ import {
     FIREBASE_IO_INSTANCE_KEY,
     LOBBY_SESSION_INSTANCE_KEY,
     PAGE_MANAGER_INSTANCE_KEY,
-    HOME_PAGE_CLASS_KEY
+    HOME_PAGE_CLASS_KEY,
+    HEARTS_ROUND_OVER_PAGE_CLASS_KEY,
+    HEARTS_MATCH_OVER_PAGE_CLASS_KEY
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 import Card from "../game/Card.mjs";
-import { orderByValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
+// Match -> The game session
+// Round -> The individual game, played untill all cards are used. 
+// Trick -> 1 'round' of cards played by each player
 
 export default class HeartsGamePage extends Page {
     static #ID = 'hearts-game-page';
-    static #PLAY_CARD_BUTTON_ID = 'play-card-button';
     static #TURN_TITLE = 'turn-title';
     static #HAND_LIST_ID = 'hand-list';
     static #PLAYED_CARDS_LIST_ID = 'played_cards_list';
@@ -31,12 +34,12 @@ export default class HeartsGamePage extends Page {
             return;
         }
         FBIO.remove(`lobbies/${LOBBY_ID}/hands/${USER_UID}/${_card}`, async () => {
-            const ROUND_DATA = await LOBBY.getRoundData();
-            if (!ROUND_DATA.playedCards) ROUND_DATA.playedCards = {};
-            if (!ROUND_DATA.leadingSuit) ROUND_DATA.leadingSuit = Card.getTemplate(_card).suit;
-            ROUND_DATA.playedCards[FBIO.authedUser().uid] = _card;
+            const TRICK_DATA = await LOBBY.getTrickData();
+            if (!TRICK_DATA.playedCards) TRICK_DATA.playedCards = {};
+            if (!TRICK_DATA.leadingSuit) TRICK_DATA.leadingSuit = Card.getTemplate(_card).suit;
+            TRICK_DATA.playedCards[FBIO.authedUser().uid] = _card;
             FBIO.update(`lobbies/${LOBBY_ID}`, {
-                roundData: ROUND_DATA
+                trickData: TRICK_DATA
             })
             this.markTurnOver();
         });
@@ -48,79 +51,102 @@ export default class HeartsGamePage extends Page {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const PLAYERS = Object.values(LOBBY.getLobbyCache().players);
         const NEXT_PLAYER = Utils.getNextElement(PLAYERS, PLAYERS.indexOf(LOBBY.getLobbyCache().turn));
-        let markRoundOver = false;
-        if (PLAYERS.indexOf(LOBBY.getLobbyCache().turn) == PLAYERS.length - 1) {
-            markRoundOver = true;
-        }
 
-        const FLAGS = LOBBY.getLobbyCache().flags;
-        FLAGS.roundOver = markRoundOver;
         FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
-            turn: NEXT_PLAYER,
-            flags: FLAGS
+            turn: NEXT_PLAYER
         });
     }
 
 
-    onTurnStart() {
+    // Add Logic For New Round;
+    async onTurnStart() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const LOBBY_FLAGS = LOBBY.getLobbyCache().flags;
-        if (LOBBY_FLAGS.roundOver) {
-            LOBBY_FLAGS.roundOver = false;
-            FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
-                flags: LOBBY_FLAGS
-            }, async () => {
-                await this.onRoundOver();
-                await FBIO.remove(`lobbies/${LOBBY.getLobbyId()}/roundData`);
-            })
+        const CACHE = LOBBY.getLobbyCache();
+        const PLAYERS = Object.values(CACHE.players);
+        const PLAYER_INDEX = PLAYERS.indexOf(CACHE.turn);
+        if (PLAYER_INDEX == 0) {
+            await this.onTrickOver();
+            await FBIO.remove(`lobbies/${LOBBY.getLobbyId()}/trickData`, () => {
+                console.log('rmd')
+            });
         }
     }
 
-    async onRoundOver() {
+    async onTrickOver() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const ROUND_DATA = LOBBY.getLobbyCache().roundData
-        const PLAYED_CARDS_IDS = ROUND_DATA.playedCards;
-        const LEADING_SUIT = ROUND_DATA.leadingSuit;
+        const TRICK_DATA = LOBBY.getLobbyCache().trickData;
+        if (TRICK_DATA) {
+            const PLAYED_CARDS_IDS = TRICK_DATA.playedCards;
+            const LEADING_SUIT = TRICK_DATA.leadingSuit;
 
-        const PLAYED_CARDS = [];
-        for (const _card of Object.values(PLAYED_CARDS_IDS)) {
-            const TEMPLATE = Card.getTemplate(_card);
-            const CARD = Card.from(TEMPLATE);
-            PLAYED_CARDS.push(CARD);
-        }
+            const PLAYED_CARDS = [];
+            for (const _card of Object.values(PLAYED_CARDS_IDS)) {
+                const TEMPLATE = Card.getTemplate(_card);
+                const CARD = Card.from(TEMPLATE);
+                PLAYED_CARDS.push(CARD);
+            }
 
-        const SCORES = {}
-        for (const [_player, _cardId] of Object.entries(PLAYED_CARDS_IDS)) {
-            const CARD = Card.from(Card.getTemplate(_cardId));
-            if (CARD.getSuit() == 'hearts' || CARD.getId() == 'sq') {
-                let score = 1;
-                if (CARD.getId() == 'sq') score = 13;
-                SCORES[_player] = score;
+            const SCORES = {}
+            for (const [_player, _cardId] of Object.entries(PLAYED_CARDS_IDS)) {
+                const CARD = Card.from(Card.getTemplate(_cardId));
+                if (CARD.getSuit() == 'hearts' || CARD.getId() == 'sq') {
+                    let score = 1;
+                    if (CARD.getId() == 'sq') score = 13;
+                    SCORES[_player] = score;
+                }
+            }
+
+            const WINNING_CARD = this.compareCards(LEADING_SUIT, ...Object.values(PLAYED_CARDS));
+            const WINNING_PLAYER = await Utils.getKeyByValue(PLAYED_CARDS_IDS, WINNING_CARD.getId());
+            await this.scorePoints(LOBBY, FBIO, WINNING_PLAYER, WINNING_CARD, PLAYED_CARDS_IDS);
+            await LOBBY.generateCache();
+            if (await this.shouldEndRound()) {
+                LOBBY.markRoundOver(FBIO);
+            } else if (await this.shouldEndMatch()){
+                await this.endMatch();
             }
         }
-
-        const WINNING_CARD = this.compareCards(LEADING_SUIT, ...Object.values(PLAYED_CARDS));
-        const WINNING_PLAYER = await Utils.getKeyByValue(PLAYED_CARDS_IDS, WINNING_CARD.getId());
-        await this.scorePoints(LOBBY, FBIO, WINNING_PLAYER, WINNING_CARD, PLAYED_CARDS_IDS);
-        await LOBBY.generateCache();
-        if (await this.shouldEndGame()) {
-            LOBBY.markGameOver(FBIO);
-        }
     }
 
-    async shouldEndGame() {
+    async shouldEndMatch(){
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const SCORES = (await LOBBY.getPoints(true)) ?? [];
+        const POINTS = await LOBBY.getPoints();
+        let shouldEnd = false;
+        for (const [_uid, _score] of Object.entries(POINTS)){
+            if (!shouldEnd && _score >= 2) {
+                shouldEnd = true;
+            }
+        }
+        return shouldEnd;
+    }
 
-        let endGame = false;
-        SCORES.forEach(_entry => {
-            if (_entry.score >= 3) {
-                endGame = true;
+    async endMatch(){
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        await FBIO.update(`/lobbies/${LOBBY.getLobbyId()}/flags`, {
+            matchOver: true
+        })
+    }
+    
+    async onMatchOver(){
+        REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_MATCH_OVER_PAGE_CLASS_KEY]);
+    }
+
+    async shouldEndRound() {
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const HANDS = LOBBY.getLobbyCache().hands;
+        let endRound = false;
+        Object.values(HANDS).forEach(_hand => {
+            const HAND_SIZE = Object.values(_hand).length;
+            console.log(HAND_SIZE);
+            if (HAND_SIZE == 24 && !endRound){
+                endRound = true;
             }
         })
-        return endGame;
+
+        return endRound;
     }
 
     async scorePoints(_lobby, _fbio, _winningPlayer, _winningCard, _playedCards) {
@@ -187,7 +213,7 @@ export default class HeartsGamePage extends Page {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         let playedCards;
         try {
-            playedCards = LOBBY.getLobbyCache().roundData.playedCards;
+            playedCards = LOBBY.getLobbyCache().trickData.playedCards;
         } catch (_error) {
             playedCards = {};
         }
@@ -217,24 +243,29 @@ export default class HeartsGamePage extends Page {
                 this.onTurnChange();
                 this.displayHand();
             },
-            [`lobbies/${LOBBY.getLobbyId()}/roundData/playedCards`]: async (_data) => {
+            [`lobbies/${LOBBY.getLobbyId()}/trickData/playedCards`]: async (_data) => {
                 await LOBBY.generateCache();
                 this.displayPlayedCards();
             },
-            [`lobbies/${LOBBY.getLobbyId()}/flags/gameOver`]: async (_data) => {
+            [`lobbies/${LOBBY.getLobbyId()}/flags/roundOver`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null || !_data) return;
-                this.onGameEnd();
+                this.onRoundOver();
             },
             [`lobbies/${LOBBY.getLobbyId()}/points`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null) return;
                 this.displayScores();
+            }, 
+            [`lobbies/${LOBBY.getLobbyId()}/flags/matchOver`]: async (_data) => {
+                await LOBBY.generateCache();
+                if (_data == null || _data == false) return;
+                this.onMatchOver();
             }
         });
     }
 
-    async displayScores(){
+    async displayScores() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const HTML_LIST = document.getElementById(HeartsGamePage.#SCORES_LIST_ID);
@@ -256,20 +287,39 @@ export default class HeartsGamePage extends Page {
     }
 
 
-    onGameEnd() {
-        alert('gameOver');
-        this.writeGlobalPoints();
+    onRoundOver() {
+        alert('roundOver');
+        REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_ROUND_OVER_PAGE_CLASS_KEY]);
+    }
+
+    triggerRoundOver() {
+
+    }
+
+    triggerNewMatch() {
+
+    }
+
+    resetMatch() {
+
     }
 
     // Points == bad...
     // Therefor rank people from < to > points. 
     // Give each position a set number of points
     // Perhaps max points equals num of players minus 1, then decrement to last place (0 score)?
-    writeGlobalPoints() {
+    async writeRoundOver() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         //const POINTS = LOBBY.getPoints();
+        console.log('wrote points to leaderboard');
+        FBIO.update(`/lobbies/${LOBBY.getLobbyId()}/flags`, {
+            gameStarted: false
+        });
+        //LOBBY.closeLobby();
+    }
 
+    async writeGlobalPoints(){
 
     }
 
@@ -295,7 +345,7 @@ export default class HeartsGamePage extends Page {
                 textContent: 'Points:'
             }),
             this.createElement('ul', {
-                id: HeartsGamePage.#SCORES_LIST_ID 
+                id: HeartsGamePage.#SCORES_LIST_ID
             }),
             this.createElement('button', {
                 id: HeartsGamePage.#CLOSE_LOBBY_BUTTON_ID,

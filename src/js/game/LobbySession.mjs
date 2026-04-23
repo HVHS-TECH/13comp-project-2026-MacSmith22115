@@ -2,7 +2,8 @@
 import {
     REFERENCES,
     FIREBASE_IO_INSTANCE_KEY,
-    LOBBY_SESSION_INSTANCE_KEY
+    LOBBY_SESSION_INSTANCE_KEY,
+    PAGE_MANAGER_INSTANCE_KEY
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 /*****************************************************************
@@ -18,7 +19,7 @@ import Utils from "../core/Utils.mjs";
 export default class LobbySession {
     #cache = {};
     #lobbyId;
-    #state; 
+    #state;
     #firebaseListeners;
 
     /*****************************************************************
@@ -30,16 +31,16 @@ export default class LobbySession {
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    async createLobby(_callback = null){
+    async createLobby(_callback = null) {
         const LOBBY_UUID = crypto.randomUUID();
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const PLAYER_UID = FBIO.authedUser().uid;
         await FBIO.update(`lobbies`, {
-            [LOBBY_UUID] : {
+            [LOBBY_UUID]: {
                 players: [PLAYER_UID],
-                flags : {
-                    gameStarted : false,
-                    lobbyOpen : true
+                flags: {
+                    gameStarted: false,
+                    lobbyOpen: true
                 }
             }
         }, () => {
@@ -50,10 +51,10 @@ export default class LobbySession {
         });
     }
 
-    async joinLobby(_id, _callback = null){
+    async joinLobby(_id, _callback = null) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = await FBIO.read(`lobbies/${_id}`);
-        if (LOBBY != null){ 
+        if (LOBBY != null) {
             const PLAYERS = LOBBY.players != null ? Object.values(LOBBY.players) : [];
             PLAYERS.push(FBIO.authedUser().uid);
             await FBIO.update(`lobbies/${_id}`, {
@@ -67,53 +68,68 @@ export default class LobbySession {
         }
     }
 
-    async closeLobby(){
+    async closeLobby() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         FBIO.remove(`lobbies/${this.getLobbyId()}`);
     }
 
-    async getRoundData(){
+    async getTrickData() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = await FBIO.read(`lobbies/${this.getLobbyId()}`);
-        return LOBBY.roundData ?? {};
+        return LOBBY.trickData ?? {};
     }
 
-    async getPoints(_sorted = false){
+    async getPoints(_sorted = false) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         let points = (await FBIO.read(`lobbies/${this.getLobbyId()}/points`)) ?? {};
 
         if (_sorted) {
-            if (!Utils.isObjEmpty(points)){
-                points = Object.entries(points).map(([player, score]) => ({player, score}));
+            if (!Utils.isObjEmpty(points)) {
+                points = Object.entries(points).map(([player, score]) => ({ player, score }));
                 points = Utils.sortObjsAscending(points, 'score');
-                console.log(points);
             }
         }
         return points;
     }
 
-    async markGameOver(_fbio){
+    async markRoundOver(_fbio) {
         await this.getLobbyCache();
+        await REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().writeRoundOver();
         await _fbio.update(`lobbies/${this.getLobbyId()}/flags`, {
-            gameOver: true   
+            roundOver: true
         })
     }
 
-    isMyTurn(){
+    isMyTurn() {
         return this.getLobbyCache().turn == REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser().uid;
     }
 
-    async generateCache(){
-        if (this.#lobbyId != null){
+    async generateCache() {
+        if (this.#lobbyId != null) {
             this.#cache.lobby = await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read(`lobbies/${this.#lobbyId}`);
         }
     }
 
-    getLobbyCache(){
+    getLobbyCache() {
         return this.#cache.lobby;
     }
 
-    getLobbyId(){
+    getLobbyId() {
         return this.#lobbyId;
+    }
+
+    resetRound(){
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = this;
+        const CACHE = LOBBY.getLobbyCache();
+
+        const FLAGS = CACHE.flags ?? {};
+        for (const [_flag, _val] of Object.entries(FLAGS)){
+            switch (_flag){
+                case 'roundOver':
+                    FLAGS.roundOver = false;
+                    break;
+            }
+        }
     }
 }

@@ -1,0 +1,12 @@
+v0.0.14
+
+Log:
+    - Renamed/Refactored logic within HeartsGamePage.mjs to use terms such as 'Trick', 'Round' and 'Match'
+    - rebuilt round ending logic;
+    - added HeartsRoundOverPage.mjs
+    - added HeartsMatchOverPage.mjs
+    - Added logic for ending of the match.
+
+
+    // TODO Start Index option;
+    // Breaking hearts & force playing off/on suit;

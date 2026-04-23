@@ -19,6 +19,19 @@ export default class Deck {
         this.shuffle();
     }
 
+    static assignHands(_hands, _players){
+        if (_hands.length != _players.length){
+            throw new Error(`Player-Hand Count Missmatch`);
+        }
+        const RESULT = {};
+        _hands.forEach(_hand => {
+            const INDEX = _hands.indexOf(_hand);
+            const PLAYER = _players[INDEX];
+            RESULT[PLAYER] = _hand;
+        })
+        return RESULT;
+    }
+
     /*****************************************************************
     * shuffle();
     * Description:

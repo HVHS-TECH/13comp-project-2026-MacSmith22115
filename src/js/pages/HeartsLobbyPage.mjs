@@ -33,7 +33,7 @@ export default class HeartsLobbyPage extends Page{
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const DECK = new Deck(...Card.TEMPLATES.map(_card => _card.id));
         const PLAYERS = (Object.values(LOBBY.getLobbyCache().players));
-        const HANDS = this.assignHands(DECK.deal(PLAYERS.length, true).hands, PLAYERS);
+        const HANDS = Deck.assignHands(DECK.deal(PLAYERS.length, true).hands, PLAYERS);
         FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
             turn: PLAYERS[0],
             flags: {
@@ -44,18 +44,9 @@ export default class HeartsLobbyPage extends Page{
         })
     }
 
-    assignHands(_hands, _players){
-         if (_hands.length != _players.length){
-             throw new Error(`Player-Hand Count Missmatch`);
-        }
-        const RESULT = {};
-        _hands.forEach(_hand => {
-            const INDEX = _hands.indexOf(_hand);
-            const PLAYER = _players[INDEX];
-            RESULT[PLAYER] = _hand;
-        })
-        return RESULT;
-    }
+
+
+
 
     /*****************************************************************
     * onDisplay();
