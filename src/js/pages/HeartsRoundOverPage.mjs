@@ -10,6 +10,7 @@ import {
 import Utils from "../core/Utils.mjs";
 import Deck from "../game/Deck.mjs";
 import Card from "../game/Card.mjs";
+import HeartsGamePage from "./HeartsGamePage.mjs";
 
 export default class HeartsRoundOverPage extends Page {
     static #ID = "hearts-round-over-page";
@@ -43,8 +44,12 @@ export default class HeartsRoundOverPage extends Page {
         const DECK = new Deck(...Card.TEMPLATES.map(_card => _card.id));
         const PLAYERS = (Object.values(LOBBY.getLobbyCache().players));
         const HANDS = Deck.assignHands(DECK.deal(PLAYERS.length, true).hands, PLAYERS);
+        const LEADING_PLAYER = HeartsGamePage.find3Cubs(HANDS);
+        const LEADING_PLAYER_INDEX = PLAYERS.indexOf(LEADING_PLAYER);
+
         FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
-            turn: PLAYERS[0],
+            turn: LEADING_PLAYER,
+            startIndex: LEADING_PLAYER_INDEX,
             flags: {
                 gameStarted: true,
                 lobbyOpen: false

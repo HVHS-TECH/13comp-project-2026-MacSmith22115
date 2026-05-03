@@ -92,9 +92,9 @@ export default class Page {
         throw new Error(`[Page.mjs] An Error Was Thrown: ${_error}`);
     }
 
-    createElement(_tag, _attrubutes = {}, _children = []){
+    createElement(_tag, _attributes = {}, _children = []){
         const ELEMENT = document.createElement(_tag);
-        Object.assign(ELEMENT, _attrubutes);
+        Object.assign(ELEMENT, _attributes);
         _children.forEach(_child => ELEMENT.append(_child));
         return ELEMENT;
     }

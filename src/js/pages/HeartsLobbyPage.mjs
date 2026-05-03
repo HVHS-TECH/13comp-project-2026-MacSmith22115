@@ -34,8 +34,11 @@ export default class HeartsLobbyPage extends Page{
         const DECK = new Deck(...Card.TEMPLATES.map(_card => _card.id));
         const PLAYERS = (Object.values(LOBBY.getLobbyCache().players));
         const HANDS = Deck.assignHands(DECK.deal(PLAYERS.length, true).hands, PLAYERS);
+        const LEADING_PLAYER = HeartsGamePage.find3Cubs(HANDS);
+        const START_INDEX = PLAYERS.indexOf(LEADING_PLAYER);
         FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
-            turn: PLAYERS[0],
+            turn: LEADING_PLAYER,
+            startIndex: START_INDEX,
             flags: {
                 gameStarted: true,
                 lobbyOpen: false

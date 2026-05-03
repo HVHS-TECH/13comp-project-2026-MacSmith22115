@@ -18,9 +18,10 @@ export default class HeartsMatchOverPage extends Page {
     static #HTML_LOBBY_BUTTON_ID = 'lobby_btn';
     #firebaseListeners;
 
-    onDisplay(){
+    onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        this.writeGlobalPoints();
         this.#firebaseListeners = FBIO.registerListeners({
             [`lobbies/${LOBBY.getLobbyId()}`]: async (_data) => {
                 if (_data != null) return;
@@ -30,22 +31,55 @@ export default class HeartsMatchOverPage extends Page {
         });
     }
 
-    onRemove(){
+    async writeGlobalPoints() {
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const CACHE = LOBBY.getLobbyCache();
+
+        const POINTS = await LOBBY.getPoints(true);
+
+        const MAP = new Map();
+
+        const TURN = CACHE.turn;
+        if (FBIO.authedUser().uid === TURN) {
+            for (const [_placing, _data] of Object.entries(POINTS)) {
+                const PLAYER = _data.player;
+                const RANKED_SCORE = this.getRankedScore(POINTS, _data);
+                await FBIO.update(`/scoreboard/hearts`, {
+                    [PLAYER]: RANKED_SCORE
+                })
+            }
+        }
+    }
+
+    getRankedScore(_globalPointsObj, _playerEntry) {
+        const MAP = new Map();
+        const PLAYER_COUNT = Object.entries(_globalPointsObj).length; // TODO: Won't count players who don't score... to fix
+        let returnVal = 0;
+        for (const [_placing, _data] of Object.entries(_globalPointsObj)) {
+            if (_data === _playerEntry) {
+                returnVal = PLAYER_COUNT - _placing;
+            }
+        }
+        return returnVal;
+    }
+
+    onRemove() {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#firebaseListeners);
     }
 
-    async backToLobby(){
+    async backToLobby() {
 
     }
 
-    async backToHomepage(){
+    async backToHomepage() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = null;
         await LOBBY.closeLobby();
         REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
     }
 
-    getHTML(){
+    getHTML() {
         return this.createElement('div', {}, [
             this.createElement('h1', {
                 textContent: "Match Over!",
@@ -64,7 +98,7 @@ export default class HeartsMatchOverPage extends Page {
         ])
     }
 
-    getId(){
+    getId() {
         return HeartsMatchOverPage.#ID;
     }
 }

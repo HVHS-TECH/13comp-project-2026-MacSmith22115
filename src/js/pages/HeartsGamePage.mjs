@@ -10,7 +10,6 @@ import {
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 import Card from "../game/Card.mjs";
-
 // Match -> The game session
 // Round -> The individual game, played untill all cards are used. 
 // Trick -> 1 'round' of cards played by each player
@@ -24,7 +23,7 @@ export default class HeartsGamePage extends Page {
     static #SCORES_LIST_ID = 'scores_list;'
     #firebaseListeners;
 
-    playCard(_card) {
+    async playCard(_card) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const USER_UID = FBIO.authedUser().uid;
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -33,28 +32,40 @@ export default class HeartsGamePage extends Page {
             alert('It Is Not Your Turn.');
             return;
         }
-        FBIO.remove(`lobbies/${LOBBY_ID}/hands/${USER_UID}/${_card}`, async () => {
+        this.displayHand(false);
+        await FBIO.remove(`lobbies/${LOBBY_ID}/hands/${USER_UID}/${_card}`, async () => {
             const TRICK_DATA = await LOBBY.getTrickData();
+            const CARD_TEMPLATE = Card.getTemplate(_card);
             if (!TRICK_DATA.playedCards) TRICK_DATA.playedCards = {};
-            if (!TRICK_DATA.leadingSuit) TRICK_DATA.leadingSuit = Card.getTemplate(_card).suit;
+            if (!TRICK_DATA.leadingSuit) TRICK_DATA.leadingSuit = CARD_TEMPLATE.suit;
+            
             TRICK_DATA.playedCards[FBIO.authedUser().uid] = _card;
-            FBIO.update(`lobbies/${LOBBY_ID}`, {
+            await FBIO.update(`lobbies/${LOBBY_ID}`, {
                 trickData: TRICK_DATA
             })
-            this.markTurnOver();
+            await FBIO.update(`lobbies/${LOBBY_ID}/flags`, {
+                heartsBroken: CARD_TEMPLATE.suit == 'hearts'
+            })
+            await this.markTurnOver();
         });
 
     }
 
-    markTurnOver() {
+    async markTurnOver() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const PLAYERS = Object.values(LOBBY.getLobbyCache().players);
-        const NEXT_PLAYER = Utils.getNextElement(PLAYERS, PLAYERS.indexOf(LOBBY.getLobbyCache().turn));
-
-        FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
-            turn: NEXT_PLAYER
-        });
+        const CACHE = LOBBY.getLobbyCache();
+        const PLAYERS = Object.values(CACHE.players);
+        const NEXT_PLAYER = Utils.getNextElement(PLAYERS, PLAYERS.indexOf(CACHE.turn));
+        const NEXT_PLAYER_INDEX = PLAYERS.indexOf(NEXT_PLAYER);
+        const START_INDEX = CACHE.startIndex;
+        if (NEXT_PLAYER_INDEX == START_INDEX){
+            await this.onTrickOver();
+        } else {
+            await FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
+                turn: NEXT_PLAYER
+            })
+        }
     }
 
 
@@ -63,20 +74,17 @@ export default class HeartsGamePage extends Page {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const CACHE = LOBBY.getLobbyCache();
+        const START_INDEX = CACHE.startIndex;
         const PLAYERS = Object.values(CACHE.players);
         const PLAYER_INDEX = PLAYERS.indexOf(CACHE.turn);
-        if (PLAYER_INDEX == 0) {
-            await this.onTrickOver();
-            await FBIO.remove(`lobbies/${LOBBY.getLobbyId()}/trickData`, () => {
-                console.log('rmd')
-            });
-        }
     }
 
     async onTrickOver() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const TRICK_DATA = LOBBY.getLobbyCache().trickData;
+        const CACHE = LOBBY.getLobbyCache();
+        const LOBBY_ID = LOBBY.getLobbyId();
         if (TRICK_DATA) {
             const PLAYED_CARDS_IDS = TRICK_DATA.playedCards;
             const LEADING_SUIT = TRICK_DATA.leadingSuit;
@@ -89,24 +97,37 @@ export default class HeartsGamePage extends Page {
             }
 
             const SCORES = {}
+            const SQ_SCORE = 13;
             for (const [_player, _cardId] of Object.entries(PLAYED_CARDS_IDS)) {
                 const CARD = Card.from(Card.getTemplate(_cardId));
                 if (CARD.getSuit() == 'hearts' || CARD.getId() == 'sq') {
                     let score = 1;
-                    if (CARD.getId() == 'sq') score = 13;
+                    if (CARD.getId() == 'sq') score = SQ_SCORE;
                     SCORES[_player] = score;
                 }
             }
 
+            const PLAYERS = Object.values(CACHE.players);
             const WINNING_CARD = this.compareCards(LEADING_SUIT, ...Object.values(PLAYED_CARDS));
             const WINNING_PLAYER = await Utils.getKeyByValue(PLAYED_CARDS_IDS, WINNING_CARD.getId());
+            const WINNING_PLAYER_INDEX = PLAYERS.indexOf(WINNING_PLAYER);
             await this.scorePoints(LOBBY, FBIO, WINNING_PLAYER, WINNING_CARD, PLAYED_CARDS_IDS);
+
+            await FBIO.remove(`lobbies/${LOBBY.getLobbyId()}/trickData`);
+
+            await FBIO.update(`/lobbies/${LOBBY_ID}`, {
+                startIndex: WINNING_PLAYER_INDEX,
+                turn: WINNING_PLAYER
+            }, async () => {
+                this.displayHand(LOBBY.isMyTurn());
+            })
             await LOBBY.generateCache();
             if (await this.shouldEndRound()) {
                 LOBBY.markRoundOver(FBIO);
             } else if (await this.shouldEndMatch()){
                 await this.endMatch();
             }
+
         }
     }
 
@@ -140,7 +161,6 @@ export default class HeartsGamePage extends Page {
         let endRound = false;
         Object.values(HANDS).forEach(_hand => {
             const HAND_SIZE = Object.values(_hand).length;
-            console.log(HAND_SIZE);
             if (HAND_SIZE == 24 && !endRound){
                 endRound = true;
             }
@@ -169,7 +189,8 @@ export default class HeartsGamePage extends Page {
     compareCards(_leadingSuit, ..._cards) {
         let topCard = null;
         _cards.forEach((_card) => {
-            if (_card.getSuit() != _leadingSuit) return;
+            if (_card.getSuit() != _leadingSuit) return;    
+
             if (!topCard || _card.getValue() > topCard.getValue()) {
                 topCard = _card;
             }
@@ -177,15 +198,16 @@ export default class HeartsGamePage extends Page {
         return topCard;
     }
 
-    onTurnChange() {
+    async onTurnChange() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const MY_TURN = LOBBY.isMyTurn();
         document.getElementById(HeartsGamePage.#TURN_TITLE).textContent =
             `It ${MY_TURN ? "Is" : "Isn't"} My Turn`
         if (MY_TURN) this.onTurnStart();
+        this.displayHand(MY_TURN);
     }
 
-    displayHand() {
+    async displayHand(_myTurn) {
         const LIST_ELEMENT = document.getElementById(HeartsGamePage.#HAND_LIST_ID);
         while (LIST_ELEMENT.firstChild) {
             LIST_ELEMENT.firstChild.remove();
@@ -193,14 +215,29 @@ export default class HeartsGamePage extends Page {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const HAND = Object.values(LOBBY.getLobbyCache().hands[FBIO.authedUser().uid]);
+        const TRICK_DATA = await LOBBY.getTrickData();
+        const LEADING_SUIT = TRICK_DATA.leadingSuit;
+        const HAND_INCLUDES_C3 = HAND.includes('c3')
         HAND.forEach(_card => {
+            const CARD = Card.getTemplate(_card);
+            const SUIT = CARD.suit;
             LIST_ELEMENT.appendChild(this.createElement('li', {}, [
                 this.createElement('button', {
                     textContent: _card,
-                    onclick: () => this.playCard(_card)
+                    onclick: () => this.playCard(_card),
+                    disabled: this.shouldDisableButton(CARD, SUIT, LEADING_SUIT, HAND_INCLUDES_C3, _myTurn)
                 })
             ]))
         });
+    }
+
+    shouldDisableButton(_card, _suit, _leadingSuit, _hasC3, _myTurn){
+        if (!_myTurn) return true;
+        if (_leadingSuit != null && _leadingSuit != undefined) return _suit != _leadingSuit;
+        if (_hasC3 && _card.id != 'c3'){
+            return true;
+        }
+        return false;
     }
 
     displayPlayedCards() {
@@ -240,8 +277,7 @@ export default class HeartsGamePage extends Page {
             [`lobbies/${LOBBY.getLobbyId()}/turn`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null) return;
-                this.onTurnChange();
-                this.displayHand();
+                await this.onTurnChange();
             },
             [`lobbies/${LOBBY.getLobbyId()}/trickData/playedCards`]: async (_data) => {
                 await LOBBY.generateCache();
@@ -288,7 +324,6 @@ export default class HeartsGamePage extends Page {
 
 
     onRoundOver() {
-        alert('roundOver');
         REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_ROUND_OVER_PAGE_CLASS_KEY]);
     }
 
@@ -312,7 +347,6 @@ export default class HeartsGamePage extends Page {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         //const POINTS = LOBBY.getPoints();
-        console.log('wrote points to leaderboard');
         FBIO.update(`/lobbies/${LOBBY.getLobbyId()}/flags`, {
             gameStarted: false
         });
@@ -325,6 +359,17 @@ export default class HeartsGamePage extends Page {
 
     onRemove() {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#firebaseListeners);
+    }
+
+    static find3Cubs(_hands){
+        let returnVal = null;
+        for (const [_player, _hand] of Object.entries(_hands)){
+            const CARD_IDS = Object.values(_hand);
+            if (CARD_IDS.includes('c3')){
+                returnVal = _player
+            }
+        }
+        return returnVal;
     }
 
     getHTML() {

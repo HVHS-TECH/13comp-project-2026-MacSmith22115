@@ -1,0 +1,12 @@
+v0.0.15
+
+Log:
+    -> Started adding dynamic turn started index
+    -> Correctly implemented writing of global scores when match is over
+    -> Moved trick over logic to end of the last players turn, instead of the start of the first persons turn
+    -> Forced playing on-suit;
+    -> Person with c3 starts each round. 
+
+TODO:
+    -> Specify cards to remove when dealing equal sized hands
+    -> Breaking Hearts
