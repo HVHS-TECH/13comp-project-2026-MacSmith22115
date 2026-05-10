@@ -4,7 +4,8 @@ import {
     REFERENCES, 
     FIREBASE_IO_INSTANCE_KEY, 
     PAGE_MANAGER_INSTANCE_KEY, 
-    HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY
+    HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY,
+    PROFILE_PAGE_CLASS_KEY
 } from '../core/ReferenceStorage.mjs';
 
 /*****************************************************************
@@ -19,7 +20,9 @@ import {
 export default class HomePage extends Page{
     static #ID = 'home_page'; // Page ID
     static #HEARTS_PLAY_BUTTON_ID = 'hearts_play';
-    #cache = {}; // Cached Data
+    static #ADMIN_PAGE_BUTTON_ID = 'admin_page_btn';
+    static #PROFILE_PAGE_BUTTON_ID = 'profile_page_btn';
+    #cache = {};
 
     /*****************************************************************
     * preDisplay();
@@ -29,8 +32,9 @@ export default class HomePage extends Page{
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    preDisplay(){
+    async preDisplay(){
         this.#cache.user = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
+        this.#cache.isAdmin = await REFERENCES[FIREBASE_IO_INSTANCE_KEY].isAuthedAdmin();
     }
 
     /*****************************************************************
@@ -42,10 +46,11 @@ export default class HomePage extends Page{
     * Throws: N/A
     *****************************************************************/
     onDisplay(){
-        document.getElementById('title').innerHTML = `Hello, ${this.#cache.user.name}`
+        document.getElementById('title').innerHTML = `Hello, ${this.#cache.user.name}, you ${this.#cache.isAdmin ? 'are' : 'are not'} admin`
         document.getElementById('user-pfp').src = this.#cache.user.pfp;
-        document.getElementById(HomePage.#HEARTS_PLAY_BUTTON_ID).onclick = () => {
-            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY]);
+
+        if (!this.#cache.isAdmin){
+            document.getElementById(HomePage.#ADMIN_PAGE_BUTTON_ID).remove();
         }
     }
 
@@ -67,7 +72,21 @@ export default class HomePage extends Page{
             }),
             this.createElement('button', {
                 id: HomePage.#HEARTS_PLAY_BUTTON_ID,
-                textContent: 'Hearts'
+                textContent: 'Hearts',
+                onclick: () => {
+                    REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY]);
+                }
+            }),
+            this.createElement('button', {
+                id: HomePage.#ADMIN_PAGE_BUTTON_ID,
+                textContent: 'Admin Page'
+            }),
+            this.createElement('button', {
+                id: HomePage.#PROFILE_PAGE_BUTTON_ID,
+                textContent: 'Profile Page',
+                onclick: () => {
+                    REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[PROFILE_PAGE_CLASS_KEY]);
+                }
             })
         ])
     }

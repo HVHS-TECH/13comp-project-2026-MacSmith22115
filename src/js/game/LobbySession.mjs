@@ -81,8 +81,7 @@ export default class LobbySession {
 
     async getPoints(_sorted = false) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        let points = (await FBIO.read(`lobbies/${this.getLobbyId()}/points`)) ?? {};
-
+        let points = this.getLobbyCache().points ?? {};
         if (_sorted) {
             if (!Utils.isObjEmpty(points)) {
                 points = Object.entries(points).map(([player, score]) => ({ player, score }));

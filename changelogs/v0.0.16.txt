@@ -1,0 +1,18 @@
+v0.0.16
+
+Log:
+    -> implemented breaking of hearts mechanic
+    -> Added automatic per-page .css file system for applying styles
+    -> Added registration form inputs and writing. 
+    -> Added 'admin' and 'profile' buttons to homepage
+    -> Created 'ProfilePage.mjs'
+
+TODO NEXT:
+    -> Specify cards to remove when dealing equal sized hands
+    -> Verify Form inputs
+    -> Write Global class for terminal inputs/outputs.
+    -> Re-write screen logic to use new 'terminal' vibe.
+    -> Comment code
+
+
+    

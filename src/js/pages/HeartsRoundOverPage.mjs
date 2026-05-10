@@ -52,7 +52,8 @@ export default class HeartsRoundOverPage extends Page {
             startIndex: LEADING_PLAYER_INDEX,
             flags: {
                 gameStarted: true,
-                lobbyOpen: false
+                lobbyOpen: false,
+                heartsBroken: false
             },
             hands: HANDS
         }, () => {

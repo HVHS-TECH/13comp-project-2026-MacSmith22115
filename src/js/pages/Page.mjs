@@ -38,6 +38,7 @@ export default class Page {
         this.#element.style.display = 'none';
         if (this.#element) _parent.append(this.#element);
         this.onDisplay();
+        document.getElementById(`${this.isSubPage() ? 'sub' : 'main'}_page_stylesheet`).href = `./src/css/${this.getId()}.css`;
         document.title = `13Comp: ${this.getId()}`;
         if (this.#element) this.#element.style.display = 'block';
     }
@@ -63,7 +64,7 @@ export default class Page {
     * Returns: N/A
     * Throws: [getHTML() || getId()] If not overriden by child
     *****************************************************************/
-    preDisplay(){}
+    async preDisplay(){}
     onDisplay(){}
     onRemove(){}
     getHTML(){this.#throwError("Extend Page.mjs to Override 'getHTML()' Before Use")}

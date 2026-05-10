@@ -2,7 +2,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import {getDatabase, set, ref, get, off,onValue,update, query,remove, orderByValue} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 import {getAuth, GoogleAuthProvider, signInWithPopup, signOut} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-
+import {
+    REFERENCES, 
+    USER_IS_ADMIN_KEY
+} from '../core/ReferenceStorage.mjs'; 
 
 /*****************************************************************
  * FirebaseIO.mjs
@@ -169,6 +172,17 @@ export default class FirebaseIO {
      * *****************************************************************/
     authedUser(){
         return this.#buildUserObject(getAuth().currentUser);
+    }
+
+    async isAuthedAdmin(){
+        const AUTHED_USER = this.authedUser();
+        if (AUTHED_USER == null) return false;
+        let isAdmin = REFERENCES[USER_IS_ADMIN_KEY];
+        if (isAdmin == null){
+            isAdmin = await this.read(`admins/${AUTHED_USER.uid}`) != null;
+            REFERENCES[USER_IS_ADMIN_KEY] = isAdmin;
+        }
+        return isAdmin;
     }
 
     /*****************************************************************

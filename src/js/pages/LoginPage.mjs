@@ -30,8 +30,7 @@ export default class LoginPage extends Page {
     * Throws: N/A
     *****************************************************************/
     onDisplay(){
-        const LOGIN_BUTTON = document.getElementById(LoginPage.#LOGIN_BUTTON_ID);
-        LOGIN_BUTTON.onclick = () => this.attemptLogin();
+
     }
 
     /*****************************************************************
@@ -46,11 +45,9 @@ export default class LoginPage extends Page {
     *****************************************************************/
     async attemptLogin(){
         const FIREBASE_IO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        
         const USER = await FIREBASE_IO.authViaGoogle();
         const USER_RECORD = await FIREBASE_IO.read(`users/${USER.uid}`);
-        
-        const PAGE_KEY = USER_RECORD != null ? HOME_PAGE_CLASS_KEY : REGISTRATION_PAGE_CLASS_KEY;
+        const PAGE_KEY = USER_RECORD != null ? HOME_PAGE_CLASS_KEY : REGISTRATION_PAGE_CLASS_KEY; // Check if user data exists
         const PAGE_CLASS = REFERENCES[PAGE_KEY];
         REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(PAGE_CLASS);
     }
@@ -64,14 +61,15 @@ export default class LoginPage extends Page {
     * Throws: N/A
     *****************************************************************/
     getHTML(){
-        return this.createElement('div', {}, [
+        return this.createElement('div', {}, [            
             this.createElement('h1', {
                 id: 'title',
                 textContent: 'This Is The Login Page!'
             }),
             this.createElement('button', {
                 id: LoginPage.#LOGIN_BUTTON_ID,
-                textContent: 'Login...'
+                textContent: 'Login...',
+                onclick: () => this.attemptLogin()
             })
         ])
     }

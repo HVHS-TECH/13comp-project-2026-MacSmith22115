@@ -28,6 +28,8 @@ export default class HeartsGamePage extends Page {
         const USER_UID = FBIO.authedUser().uid;
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const LOBBY_ID = LOBBY.getLobbyId();
+        const CACHE = LOBBY.getLobbyCache();
+        const FLAGS = CACHE.flags;
         if (!LOBBY.isMyTurn()) {
             alert('It Is Not Your Turn.');
             return;
@@ -43,9 +45,12 @@ export default class HeartsGamePage extends Page {
             await FBIO.update(`lobbies/${LOBBY_ID}`, {
                 trickData: TRICK_DATA
             })
-            await FBIO.update(`lobbies/${LOBBY_ID}/flags`, {
-                heartsBroken: CARD_TEMPLATE.suit == 'hearts'
-            })
+
+            if (!FLAGS.heartsBroken){
+                await FBIO.update(`lobbies/${LOBBY_ID}/flags`, {
+                    heartsBroken: CARD_TEMPLATE.suit == 'hearts'
+                })
+            }
             await this.markTurnOver();
         });
 
@@ -111,29 +116,28 @@ export default class HeartsGamePage extends Page {
             const WINNING_CARD = this.compareCards(LEADING_SUIT, ...Object.values(PLAYED_CARDS));
             const WINNING_PLAYER = await Utils.getKeyByValue(PLAYED_CARDS_IDS, WINNING_CARD.getId());
             const WINNING_PLAYER_INDEX = PLAYERS.indexOf(WINNING_PLAYER);
-            await this.scorePoints(LOBBY, FBIO, WINNING_PLAYER, WINNING_CARD, PLAYED_CARDS_IDS);
-
+            this.scorePoints(LOBBY, FBIO, WINNING_PLAYER, WINNING_CARD, PLAYED_CARDS_IDS);
             await FBIO.remove(`lobbies/${LOBBY.getLobbyId()}/trickData`);
 
             await FBIO.update(`/lobbies/${LOBBY_ID}`, {
                 startIndex: WINNING_PLAYER_INDEX,
                 turn: WINNING_PLAYER
-            }, async () => {
+            }, () => {
                 this.displayHand(LOBBY.isMyTurn());
             })
             await LOBBY.generateCache();
-            if (await this.shouldEndRound()) {
+            if (this.shouldEndRound()) {
                 LOBBY.markRoundOver(FBIO);
-            } else if (await this.shouldEndMatch()){
-                await this.endMatch();
+            } else if (this.shouldEndMatch()){
+                this.endMatch();
             }
 
         }
     }
 
-    async shouldEndMatch(){
+    shouldEndMatch(){
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const POINTS = await LOBBY.getPoints();
+        const POINTS = LOBBY.getPoints();
         let shouldEnd = false;
         for (const [_uid, _score] of Object.entries(POINTS)){
             if (!shouldEnd && _score >= 2) {
@@ -146,7 +150,7 @@ export default class HeartsGamePage extends Page {
     async endMatch(){
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        await FBIO.update(`/lobbies/${LOBBY.getLobbyId()}/flags`, {
+        FBIO.update(`/lobbies/${LOBBY.getLobbyId()}/flags`, {
             matchOver: true
         })
     }
@@ -155,13 +159,14 @@ export default class HeartsGamePage extends Page {
         REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_MATCH_OVER_PAGE_CLASS_KEY]);
     }
 
-    async shouldEndRound() {
+    shouldEndRound() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const HANDS = LOBBY.getLobbyCache().hands;
         let endRound = false;
         Object.values(HANDS).forEach(_hand => {
             const HAND_SIZE = Object.values(_hand).length;
-            if (HAND_SIZE == 24 && !endRound){
+            console.log(HAND_SIZE);
+            if (HAND_SIZE == 0 && !endRound){
                 endRound = true;
             }
         })
@@ -207,6 +212,15 @@ export default class HeartsGamePage extends Page {
         this.displayHand(MY_TURN);
     }
 
+    canPlayOnsuit(_hand, _leading){
+        let val = false;
+        _hand.forEach(_card => {
+            const CARD = Card.getTemplate(_card);
+            if (!val && CARD.suit == _leading) val = true;
+        })
+        return val;
+    }
+
     async displayHand(_myTurn) {
         const LIST_ELEMENT = document.getElementById(HeartsGamePage.#HAND_LIST_ID);
         while (LIST_ELEMENT.firstChild) {
@@ -217,7 +231,10 @@ export default class HeartsGamePage extends Page {
         const HAND = Object.values(LOBBY.getLobbyCache().hands[FBIO.authedUser().uid]);
         const TRICK_DATA = await LOBBY.getTrickData();
         const LEADING_SUIT = TRICK_DATA.leadingSuit;
-        const HAND_INCLUDES_C3 = HAND.includes('c3')
+        const HAND_INCLUDES_C3 = HAND.includes('c3');
+        const HEARTS_BROKEN = LOBBY.getLobbyCache().flags.heartsBroken ?? false;
+
+        let canOnSuit = this.canPlayOnsuit(HAND, LEADING_SUIT);
         HAND.forEach(_card => {
             const CARD = Card.getTemplate(_card);
             const SUIT = CARD.suit;
@@ -225,19 +242,44 @@ export default class HeartsGamePage extends Page {
                 this.createElement('button', {
                     textContent: _card,
                     onclick: () => this.playCard(_card),
-                    disabled: this.shouldDisableButton(CARD, SUIT, LEADING_SUIT, HAND_INCLUDES_C3, _myTurn)
+                    disabled: !this.canPlayCard(CARD, SUIT, LEADING_SUIT, HAND_INCLUDES_C3, _myTurn, canOnSuit, HEARTS_BROKEN)
                 })
             ]))
         });
     }
 
-    shouldDisableButton(_card, _suit, _leadingSuit, _hasC3, _myTurn){
-        if (!_myTurn) return true;
-        if (_leadingSuit != null && _leadingSuit != undefined) return _suit != _leadingSuit;
-        if (_hasC3 && _card.id != 'c3'){
-            return true;
+
+
+
+    // If not turn -> false
+    // If they have C3, and NOT C3 -> false
+    // If first card -> true, false if heart and not broken
+    // If cant play onsuit -> true (Break Hearts);
+
+    // BUGGED! TODO: Fix allowing clubs when leading is diamonds
+    canPlayCard(_card, _suit, _leadingSuit, _hasC3, _myTurn, _canPlayOnsuit, _heartsBroken){
+        if (_myTurn){
+            if (_hasC3){
+                return _card.id == 'c3';    // your turn, have C3 -> is C3 ? T/F;
+            } else {
+                if (_leadingSuit != null && _leadingSuit != undefined){
+                    console.log(`Leading: ${_leadingSuit}... This: ${_suit}...`)
+                    if (_canPlayOnsuit){
+                        let isOnSuit = _suit == _leadingSuit;
+                        console.log(`On Suit: ${isOnSuit}`);
+                        return isOnSuit;
+                    } else {
+                        console.log(`${_card.id} was Offsuit!`);
+                        return true;
+                    }
+                    //return _canPlayOnsuit ? (_suit == _leadingSuit) : true;   // your turn, no C3, not first card -> can Onsuit ? (is onsuit ? T/F)/T
+                } else {
+                    return !_heartsBroken ? (_suit != 'hearts') : true; // your turn, no C3, first card -> hearts not broken ? (is not heart ? T/F)/T
+                }
+            }
+        } else {
+            return false;   // not your turn -> F
         }
-        return false;
     }
 
     displayPlayedCards() {

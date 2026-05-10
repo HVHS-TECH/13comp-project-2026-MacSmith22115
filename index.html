@@ -2,6 +2,9 @@
 <html>
     <head>
         <title>13Comp</title>
+        <link rel="stylesheet" id="common_stylesheet">
+        <link rel="stylesheet" id="main_page_stylesheet">
+        <link rel="stylesheet" id="sub_page_stylesheet">
     </head>
     <body>
         <main id="page"></main>
@@ -10,6 +13,7 @@
             import PageManager from './src/js/core/PageManager.mjs';
             import LoginPage from './src/js/pages/LoginPage.mjs';
             import HomePage from './src/js/pages/HomePage.mjs';
+            import ProfilePage from './src/js/pages/ProfilePage.mjs';
             import RegistrationPage from './src/js/pages/RegistrationPage.mjs';
             import HeartsLobbyBrowserPage from './src/js/pages/HeartsLobbyBrowserPage.mjs';
             import HeartsLobbyPage from './src/js/pages/HeartsLobbyPage.mjs';
@@ -24,6 +28,7 @@
                 FIREBASE_IO_INSTANCE_KEY, 
                 LOGIN_PAGE_CLASS_KEY, 
                 HOME_PAGE_CLASS_KEY,
+                PROFILE_PAGE_CLASS_KEY,
                 REGISTRATION_PAGE_CLASS_KEY,
                 HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY,
                 HEARTS_LOBBY_PAGE_CLASS_KEY,
@@ -34,6 +39,7 @@
 
             REFERENCES[LOGIN_PAGE_CLASS_KEY] = LoginPage;
             REFERENCES[HOME_PAGE_CLASS_KEY] = HomePage;
+            REFERENCES[PROFILE_PAGE_CLASS_KEY] = ProfilePage;
             REFERENCES[REGISTRATION_PAGE_CLASS_KEY] = RegistrationPage;
             REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY]= HeartsLobbyBrowserPage;
             REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY] = HeartsLobbyPage;

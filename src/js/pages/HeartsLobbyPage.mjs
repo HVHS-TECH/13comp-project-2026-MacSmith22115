@@ -41,7 +41,8 @@ export default class HeartsLobbyPage extends Page{
             startIndex: START_INDEX,
             flags: {
                 gameStarted: true,
-                lobbyOpen: false
+                lobbyOpen: false,
+                heartsBroken: false,
             },
             hands: HANDS
         })
