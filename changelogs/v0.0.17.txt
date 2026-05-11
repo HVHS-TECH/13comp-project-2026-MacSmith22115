@@ -1,0 +1,15 @@
+v0.0.17
+
+Log:
+    -> Started implementing a terminal system with 'Terminal.mjs', 'CommandSet.mjs' and 'Command.mjs'
+
+TODO NEXT:
+    -> Specify cards to remove when dealing equal sized hands
+    -> Verify Form inputs
+    -> Write Global class for terminal inputs/outputs.
+    -> Re-write screen logic to use new 'terminal' vibe.
+    -> Comment code
+    -> finish terminal code
+
+
+    

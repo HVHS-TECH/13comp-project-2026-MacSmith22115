@@ -5,8 +5,11 @@ import {
     PAGE_MANAGER_INSTANCE_KEY, 
     FIREBASE_IO_INSTANCE_KEY, 
     HOME_PAGE_CLASS_KEY,
-    REGISTRATION_PAGE_CLASS_KEY
+    REGISTRATION_PAGE_CLASS_KEY,
+    TERMINAL_INSTANCE
 } from '../core/ReferenceStorage.mjs';
+import CommandSet from '../core/CommandSet.mjs';
+import Terminal from '../core/Terminal.mjs';
 
 /*****************************************************************
  * LoginPage.mjs
@@ -21,6 +24,16 @@ export default class LoginPage extends Page {
     static #ID = 'login_page'; // Page ID
     static #LOGIN_BUTTON_ID = 'login_button'; // ID of login button
 
+    static #TERMINAL_INPUT_ID = 'terminal_input';
+    static #TERMINAL_OUTPUT_ID = 'terminal_output';
+
+    static #keydownListener = (_event) => {
+        if (_event.key !== 'Enter') return;
+        const ELEMENT = document.getElementById(LoginPage.#TERMINAL_INPUT_ID)
+        if (ELEMENT.value == '') return;
+        console.log('passed');
+        REFERENCES[TERMINAL_INSTANCE].readInput();
+    }
     /*****************************************************************
     * onDisplay();
     * Description:
@@ -30,7 +43,14 @@ export default class LoginPage extends Page {
     * Throws: N/A
     *****************************************************************/
     onDisplay(){
+        const INPUT = document.getElementById(LoginPage.#TERMINAL_INPUT_ID);
+        const OUTPUT = document.getElementById(LoginPage.#TERMINAL_OUTPUT_ID);
+        REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT, CommandSet.CORE, CommandSet.ADMIN);
+        document.addEventListener('keydown', LoginPage.#keydownListener);
+    }
 
+    onRemove(){
+        document.removeEventListener('keydown', LoginPage.#keydownListener);
     }
 
     /*****************************************************************
@@ -70,6 +90,13 @@ export default class LoginPage extends Page {
                 id: LoginPage.#LOGIN_BUTTON_ID,
                 textContent: 'Login...',
                 onclick: () => this.attemptLogin()
+            }),
+            this.createElement('input', {
+                type: 'text',
+                id: LoginPage.#TERMINAL_INPUT_ID
+            }),
+            this.createElement('p', {
+                id: LoginPage.#TERMINAL_OUTPUT_ID
             })
         ])
     }

@@ -11,6 +11,7 @@ export const HEARTS_ROUND_OVER_PAGE_CLASS_KEY = 'hearts_round_over'; // Class Re
 export const HEARTS_MATCH_OVER_PAGE_CLASS_KEY = 'hearts_match_round_over'; // Class Reference of 'HeartsRoundOverPage.mjs'
 export const LOBBY_SESSION_INSTANCE_KEY = 'lobby_session_instance'; // Instance of 'GameSession.mjs'
 export const USER_IS_ADMIN_KEY = 'user_is_admin';
+export const TERMINAL_INSTANCE = 'terminal_instance';
 
 // Object containing references to classes, instances and data.
 export const REFERENCES = {
@@ -26,5 +27,6 @@ export const REFERENCES = {
     [LOBBY_SESSION_INSTANCE_KEY] : null,
     [HEARTS_ROUND_OVER_PAGE_CLASS_KEY] : null,
     [HEARTS_MATCH_OVER_PAGE_CLASS_KEY] : null,
-    [USER_IS_ADMIN_KEY]: null
+    [USER_IS_ADMIN_KEY]: null,
+    [TERMINAL_INSTANCE] : null
 }

@@ -22,6 +22,7 @@ export default class HomePage extends Page{
     static #HEARTS_PLAY_BUTTON_ID = 'hearts_play';
     static #ADMIN_PAGE_BUTTON_ID = 'admin_page_btn';
     static #PROFILE_PAGE_BUTTON_ID = 'profile_page_btn';
+
     #cache = {};
 
     /*****************************************************************
