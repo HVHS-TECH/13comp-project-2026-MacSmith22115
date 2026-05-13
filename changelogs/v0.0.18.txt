@@ -1,0 +1,14 @@
+v0.0.18
+
+Log:
+    -> Implemented a command system using JSON's and recursion. 
+
+TODO NEXT:
+    -> Specify cards to remove when dealing equal sized hands
+    -> Verify Form inputs
+    -> Write Global class for terminal inputs/outputs.
+    -> Re-write screen logic to use new 'terminal' vibe.
+    -> Comment code
+
+
+    

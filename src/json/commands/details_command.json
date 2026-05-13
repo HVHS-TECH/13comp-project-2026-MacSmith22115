@@ -1,0 +1,22 @@
+{
+    "pages": ["login_page"],
+    "args":{
+        "details": {
+            "get": {
+                "name": {
+                    "*": "adc8ed62-3bb9-4282-8153-8cd64389ac68"
+                },
+                "age": {
+                    "*": "7acdfd73-1bb9-4ff2-b4dd-afd50be64342"
+                }
+            },
+            "set": {
+                "name": {
+                    "-": {
+                        "*": "83f10a3d-3dc6-45ec-bbfc-0341482aaf57"
+                    }
+                }
+            }
+        }
+    }
+}

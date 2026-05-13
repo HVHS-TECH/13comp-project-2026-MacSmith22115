@@ -8,7 +8,6 @@ import {
     REGISTRATION_PAGE_CLASS_KEY,
     TERMINAL_INSTANCE
 } from '../core/ReferenceStorage.mjs';
-import CommandSet from '../core/CommandSet.mjs';
 import Terminal from '../core/Terminal.mjs';
 
 /*****************************************************************
@@ -22,8 +21,6 @@ import Terminal from '../core/Terminal.mjs';
  ****************************************************************/
 export default class LoginPage extends Page {      
     static #ID = 'login_page'; // Page ID
-    static #LOGIN_BUTTON_ID = 'login_button'; // ID of login button
-
     static #TERMINAL_INPUT_ID = 'terminal_input';
     static #TERMINAL_OUTPUT_ID = 'terminal_output';
 
@@ -45,12 +42,13 @@ export default class LoginPage extends Page {
     onDisplay(){
         const INPUT = document.getElementById(LoginPage.#TERMINAL_INPUT_ID);
         const OUTPUT = document.getElementById(LoginPage.#TERMINAL_OUTPUT_ID);
-        REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT, CommandSet.CORE, CommandSet.ADMIN);
+        REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
         document.addEventListener('keydown', LoginPage.#keydownListener);
     }
 
     onRemove(){
         document.removeEventListener('keydown', LoginPage.#keydownListener);
+        REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
     /*****************************************************************
@@ -85,11 +83,6 @@ export default class LoginPage extends Page {
             this.createElement('h1', {
                 id: 'title',
                 textContent: 'This Is The Login Page!'
-            }),
-            this.createElement('button', {
-                id: LoginPage.#LOGIN_BUTTON_ID,
-                textContent: 'Login...',
-                onclick: () => this.attemptLogin()
             }),
             this.createElement('input', {
                 type: 'text',

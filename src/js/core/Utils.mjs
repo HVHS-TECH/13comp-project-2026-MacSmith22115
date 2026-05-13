@@ -24,6 +24,29 @@ export default class Utils {
     }
 
      /*****************************************************************
+    * fetchJSON(_path);
+    * Description:
+    *   -> Fetches and parses, and returns a JSON file on the client
+    * Params: 
+    *   -> '_path': String Path of targeted JSON
+    * Returns: JSON Object of fetched JSON
+    * Throws: Error if encounted while fetching the JSON.
+    *****************************************************************/
+    static async fetchJSON(_path){
+        const FULL_PATH = `/src/json/${_path}`;
+        try {
+            const RESPONSE = await fetch(FULL_PATH);
+            if (!RESPONSE.ok) {
+                throw new Error(`Encounted HTTP Error Fetching JSON @ ${FULL_PATH}: ${RESPONSE.status}`);
+            }
+            const DATA = await RESPONSE.json();
+            return DATA;
+        } catch (_error) {
+            console.error(`Failed To Fetch Or Parse JSON @ ${FULL_PATH}: ${_error}`);
+        }
+    }
+
+     /*****************************************************************
     * getKeyByValue(_path);
     * Description:
     *   -> Finds the key associated with a given value in an object.

@@ -102,7 +102,7 @@ export default class FirebaseIO {
     /*****************************************************************
      * registerListeners(_listeners);
      * Description:
-     *    -> Recursivly registers listeners on to the database
+     *    -> Registers listeners on to the database
      *    -> Listeners are called when data at their path is changed
      * Params: '_listeners': Object containing paths (field), mapped to a listener callback (value);
      * Returns: Array of registered Listeners, used to unregister listeners later.
