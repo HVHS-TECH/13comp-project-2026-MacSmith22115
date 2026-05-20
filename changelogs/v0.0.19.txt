@@ -1,0 +1,24 @@
+v0.0.19
+
+Log:
+    -> Added callbacks to the commands.
+    -> Added empty css files for each page, to supress errors.
+    -> Added Admin Page
+
+TODO NEXT:
+    -> Specify cards to remove when dealing equal sized hands
+    -> Verify Form inputs
+    -> Write Global class for terminal inputs/outputs.
+    -> Re-write screen logic to use new 'terminal' vibe.
+    -> Comment code
+    -> Rename cmd .mjs's to reflect screen, details for profile vs registration is diff
+    -> Validate Registration Stuff.
+    -> tolowercase on cmds
+    -> Create IO for terminal?
+
+THINK ABOUT:
+Register cmd be like 'register name -mac'
+Profile/Admin be like 'details set name -mac'
+Lazy Import page class? then access dynamic method? for cmds
+Filter out dead servers when loading server list.
+private servers accessed with uuid? not findable in server finder?

@@ -1,19 +1,24 @@
 {
-    "pages": ["login_page"],
+    "pages": ["profile_page"],
     "args":{
         "details": {
             "get": {
                 "name": {
-                    "*": "adc8ed62-3bb9-4282-8153-8cd64389ac68"
+                    "*": "details/get/GetName.mjs"
                 },
                 "age": {
-                    "*": "7acdfd73-1bb9-4ff2-b4dd-afd50be64342"
+                    "*": "details/get/GetAge.mjs"
                 }
             },
             "set": {
                 "name": {
                     "-": {
-                        "*": "83f10a3d-3dc6-45ec-bbfc-0341482aaf57"
+                        "*": "details/set/SetName.mjs"
+                    }
+                }, 
+                "age": {
+                    "-": {
+                        "*": "details/set/SetAge.mjs"
                     }
                 }
             }

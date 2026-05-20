@@ -12,7 +12,7 @@ import Deck from "../game/Deck.mjs";
 import Card from "../game/Card.mjs";
 
 export default class HeartsMatchOverPage extends Page {
-    static #ID;
+    static ID = 'hearts_match_over_page';
     static #HTML_TITLE_ID = 'main_title';
     static #HTML_HOMEPAGE_BUTTON_ID = 'homepage_btn';
     static #HTML_LOBBY_BUTTON_ID = 'lobby_btn';
@@ -99,6 +99,6 @@ export default class HeartsMatchOverPage extends Page {
     }
 
     getId() {
-        return HeartsMatchOverPage.#ID;
+        return HeartsMatchOverPage.ID;
     }
 }

@@ -5,7 +5,8 @@ import {
     FIREBASE_IO_INSTANCE_KEY, 
     PAGE_MANAGER_INSTANCE_KEY, 
     HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY,
-    PROFILE_PAGE_CLASS_KEY
+    PROFILE_PAGE_CLASS_KEY,
+    ADMIN_PAGE_CLASS_KEY
 } from '../core/ReferenceStorage.mjs';
 
 /*****************************************************************
@@ -18,7 +19,7 @@ import {
  *  -> Used to access games, profile details, and more
  ****************************************************************/
 export default class HomePage extends Page{
-    static #ID = 'home_page'; // Page ID
+    static ID = 'home_page'; // Page ID
     static #HEARTS_PLAY_BUTTON_ID = 'hearts_play';
     static #ADMIN_PAGE_BUTTON_ID = 'admin_page_btn';
     static #PROFILE_PAGE_BUTTON_ID = 'profile_page_btn';
@@ -80,7 +81,10 @@ export default class HomePage extends Page{
             }),
             this.createElement('button', {
                 id: HomePage.#ADMIN_PAGE_BUTTON_ID,
-                textContent: 'Admin Page'
+                textContent: 'Admin Page',
+                onclick: () => {
+                    REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[ADMIN_PAGE_CLASS_KEY]);
+                }
             }),
             this.createElement('button', {
                 id: HomePage.#PROFILE_PAGE_BUTTON_ID,
@@ -101,6 +105,6 @@ export default class HomePage extends Page{
     * Throws: N/A
     *****************************************************************/
     getId(){
-        return HomePage.#ID;
+        return HomePage.ID;
     }
 }

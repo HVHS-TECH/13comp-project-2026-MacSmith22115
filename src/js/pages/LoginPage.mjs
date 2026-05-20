@@ -20,17 +20,10 @@ import Terminal from '../core/Terminal.mjs';
  *  -> The login page, used to auth with google
  ****************************************************************/
 export default class LoginPage extends Page {      
-    static #ID = 'login_page'; // Page ID
+    static ID = 'login_page'; // Page ID
     static #TERMINAL_INPUT_ID = 'terminal_input';
     static #TERMINAL_OUTPUT_ID = 'terminal_output';
 
-    static #keydownListener = (_event) => {
-        if (_event.key !== 'Enter') return;
-        const ELEMENT = document.getElementById(LoginPage.#TERMINAL_INPUT_ID)
-        if (ELEMENT.value == '') return;
-        console.log('passed');
-        REFERENCES[TERMINAL_INSTANCE].readInput();
-    }
     /*****************************************************************
     * onDisplay();
     * Description:
@@ -39,15 +32,14 @@ export default class LoginPage extends Page {
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    onDisplay(){
-        const INPUT = document.getElementById(LoginPage.#TERMINAL_INPUT_ID);
-        const OUTPUT = document.getElementById(LoginPage.#TERMINAL_OUTPUT_ID);
+    async onDisplay(){
+        const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
+        const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
-        document.addEventListener('keydown', LoginPage.#keydownListener);
     }
 
     onRemove(){
-        document.removeEventListener('keydown', LoginPage.#keydownListener);
+        REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
@@ -86,10 +78,10 @@ export default class LoginPage extends Page {
             }),
             this.createElement('input', {
                 type: 'text',
-                id: LoginPage.#TERMINAL_INPUT_ID
+                id: Terminal.TERMINAL_INPUT_ELEMENT_ID
             }),
             this.createElement('p', {
-                id: LoginPage.#TERMINAL_OUTPUT_ID
+                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
             })
         ])
     }
@@ -103,6 +95,6 @@ export default class LoginPage extends Page {
     * Throws: N/A
     *****************************************************************/
     getId(){
-        return LoginPage.#ID;
+        return LoginPage.ID;
     }
 }

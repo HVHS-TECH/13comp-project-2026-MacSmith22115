@@ -23,7 +23,7 @@ import Card from "../game/Card.mjs";
  *  -> Acts as an intermediatry page between the lobby browser and game of 'Hearts
  ****************************************************************/
 export default class HeartsLobbyPage extends Page{
-    static #ID = 'hearts_lobby';
+    static ID = 'hearts_lobby_page';
     static #PLAYERS_LIST_ID = 'players_list'; 
     static #START_GAME_BUTTON_ID = 'start_game_button';
     #firebaseListeners;
@@ -154,6 +154,6 @@ export default class HeartsLobbyPage extends Page{
     * Throws: N/A
     *****************************************************************/
     getId(){
-        return HeartsLobbyPage.#ID;
+        return HeartsLobbyPage.ID;
     }
 }

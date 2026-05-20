@@ -3,7 +3,7 @@
     "args": {
         "login": {
             "google": {
-                "*": "371498ea-5da6-4ad2-89a4-4ff29b28bc74"
+                "*": "login/LoginGoogle.mjs"
             }
         }
     }

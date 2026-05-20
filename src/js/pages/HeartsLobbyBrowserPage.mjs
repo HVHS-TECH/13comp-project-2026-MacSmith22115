@@ -19,7 +19,7 @@ import LobbySession from "../game/LobbySession.mjs";
  *  -> Either join or create a lobby
  ****************************************************************/
 export default class HeartsLobbyBrowserPage extends Page {
-    static #ID = "hearts_lobby";
+    static ID = "hearts_lobby_browser_page";
     static #CREATE_LOBBY_BUTTON_ID = "create-lobby-button";
     static #ACTIVE_LOBBY_LIST_ID = 'active-lobby-list';
 
@@ -93,6 +93,6 @@ export default class HeartsLobbyBrowserPage extends Page {
     * Throws: N/A
     *****************************************************************/
     getId() {
-        return HeartsLobbyBrowserPage.#ID;
+        return HeartsLobbyBrowserPage.ID;
     }
 }

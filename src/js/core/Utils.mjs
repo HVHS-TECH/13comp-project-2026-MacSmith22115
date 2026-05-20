@@ -71,4 +71,8 @@ export default class Utils {
     static objToArr(_obj){
         return Object.entries(_obj).map(([_key, _value]) => ({_key, _value}));
     }
+
+    static objHasField(_obj, _field){
+        return Object.hasOwn(_obj, _field);
+    }
 }   

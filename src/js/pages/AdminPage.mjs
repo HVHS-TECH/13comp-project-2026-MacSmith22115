@@ -9,25 +9,35 @@ import {
 } from '../core/ReferenceStorage.mjs';
 import Terminal from '../core/Terminal.mjs';
 
-export default class ProfilePage extends Page {
-    static ID = "profile_page";
+export default class AdminPage extends Page {
+    static ID = 'admin_page';
+    selectedUser = null;
+
+    preDisplay(){
+    }
 
     async onDisplay(){
-        const AUTH = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const IS_ADMIN = FBIO.isAuthedAdmin();
+        if (!IS_ADMIN) {
+            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
+            return;
+        }
+
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
-        REFERENCES[TERMINAL_INSTANCE].systemPrint(`Viewing Details for ${AUTH.name}`);
+        REFERENCES[TERMINAL_INSTANCE].systemPrint(`"With Great Power Come Great Responsibility"`);
     }
 
     getId(){
-        return ProfilePage.ID;
+        return AdminPage.ID;
     }
 
     getHTML(){
         return this.createElement('div', {}, [
             this.createElement('h1', {
-                textContent: "Profile Page"
+                textContent: "Admin Page"
             }),
             this.createElement('input', {
                 type: 'text',

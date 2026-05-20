@@ -171,7 +171,8 @@ export default class FirebaseIO {
      * Throws: N/A
      * *****************************************************************/
     authedUser(){
-        return this.#buildUserObject(getAuth().currentUser);
+        const USER = getAuth().currentUser;
+        return USER != null ? this.#buildUserObject(USER) : null;
     }
 
     async isAuthedAdmin(){
@@ -196,6 +197,7 @@ export default class FirebaseIO {
      * *****************************************************************/
     #buildUserObject(_user){
         return {
+            email: _user.email,
             name: _user.displayName,
             uid: _user.uid,
             pfp: _user.photoURL

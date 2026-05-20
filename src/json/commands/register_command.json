@@ -1,0 +1,20 @@
+{
+    "pages": ["registration_page"],
+    "args":{
+        "register": {
+            "name": {
+                "-": {
+                    "*": "register/RegisterName.mjs"
+                }
+            }, 
+            "age": {
+                "-": {
+                    "*": "register/RegisterAge.mjs"
+                }
+            },
+            "confirm": {
+                "*": "register/RegisterConfirm.mjs"
+            }
+        }
+    }
+}

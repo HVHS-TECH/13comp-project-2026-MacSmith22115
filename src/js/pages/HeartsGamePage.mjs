@@ -15,7 +15,7 @@ import Card from "../game/Card.mjs";
 // Trick -> 1 'round' of cards played by each player
 
 export default class HeartsGamePage extends Page {
-    static #ID = 'hearts-game-page';
+    static ID = 'hearts_game_page';
     static #TURN_TITLE = 'turn-title';
     static #HAND_LIST_ID = 'hand-list';
     static #PLAYED_CARDS_LIST_ID = 'played_cards_list';
@@ -165,7 +165,6 @@ export default class HeartsGamePage extends Page {
         let endRound = false;
         Object.values(HANDS).forEach(_hand => {
             const HAND_SIZE = Object.values(_hand).length;
-            console.log(HAND_SIZE);
             if (HAND_SIZE == 0 && !endRound){
                 endRound = true;
             }
@@ -263,13 +262,10 @@ export default class HeartsGamePage extends Page {
                 return _card.id == 'c3';    // your turn, have C3 -> is C3 ? T/F;
             } else {
                 if (_leadingSuit != null && _leadingSuit != undefined){
-                    console.log(`Leading: ${_leadingSuit}... This: ${_suit}...`)
                     if (_canPlayOnsuit){
                         let isOnSuit = _suit == _leadingSuit;
-                        console.log(`On Suit: ${isOnSuit}`);
                         return isOnSuit;
                     } else {
-                        console.log(`${_card.id} was Offsuit!`);
                         return true;
                     }
                     //return _canPlayOnsuit ? (_suit == _leadingSuit) : true;   // your turn, no C3, not first card -> can Onsuit ? (is onsuit ? T/F)/T
@@ -445,6 +441,6 @@ export default class HeartsGamePage extends Page {
     }
 
     getId() {
-        return HeartsGamePage.#ID;
+        return HeartsGamePage.ID;
     }
 }

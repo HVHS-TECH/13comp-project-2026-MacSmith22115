@@ -3,6 +3,7 @@ export const FIREBASE_IO_INSTANCE_KEY = 'firebase_io_instance'; // Instance of '
 export const LOGIN_PAGE_CLASS_KEY = 'login_page_class'; // Class Reference of 'LoginPage.mjs'
 export const HOME_PAGE_CLASS_KEY = 'home_page_class'; // Class Reference of 'HomePage.mjs'
 export const PROFILE_PAGE_CLASS_KEY = 'profile_page_class'; // Class Reference of 'ProfilePage.mjs'
+export const ADMIN_PAGE_CLASS_KEY = 'admin_page_class'; // Class Reference of 'AdminPage.mjs'
 export const REGISTRATION_PAGE_CLASS_KEY = 'registration_page'; // Class Reference of 'RegistrationPage.mjs'
 export const HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY = 'hearts_lobby_browser'; // Class Reference of 'HeartsLobbyBrowserPage.mjs'
 export const HEARTS_LOBBY_PAGE_CLASS_KEY = 'hearts_lobby'; // Class Reference of 'HeartsLobbyPage.mjs'
@@ -12,7 +13,7 @@ export const HEARTS_MATCH_OVER_PAGE_CLASS_KEY = 'hearts_match_round_over'; // Cl
 export const LOBBY_SESSION_INSTANCE_KEY = 'lobby_session_instance'; // Instance of 'GameSession.mjs'
 export const USER_IS_ADMIN_KEY = 'user_is_admin';
 export const TERMINAL_INSTANCE = 'terminal_instance';
-
+export const REGISTRATION_CACHE = 'registration_cache'; // Cache saved when registering.
 // Object containing references to classes, instances and data.
 export const REFERENCES = {
     [PAGE_MANAGER_INSTANCE_KEY] : null,
@@ -20,6 +21,7 @@ export const REFERENCES = {
     [LOGIN_PAGE_CLASS_KEY] : null,
     [HOME_PAGE_CLASS_KEY] : null,
     [PROFILE_PAGE_CLASS_KEY] : null,
+    [ADMIN_PAGE_CLASS_KEY] : null,
     [REGISTRATION_PAGE_CLASS_KEY] : null,
     [HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY] : null,
     [HEARTS_LOBBY_PAGE_CLASS_KEY] : null,
@@ -28,5 +30,6 @@ export const REFERENCES = {
     [HEARTS_ROUND_OVER_PAGE_CLASS_KEY] : null,
     [HEARTS_MATCH_OVER_PAGE_CLASS_KEY] : null,
     [USER_IS_ADMIN_KEY]: null,
-    [TERMINAL_INSTANCE] : null
+    [TERMINAL_INSTANCE] : null,
+    [REGISTRATION_CACHE] : {}
 }

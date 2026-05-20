@@ -13,7 +13,7 @@ import Card from "../game/Card.mjs";
 import HeartsGamePage from "./HeartsGamePage.mjs";
 
 export default class HeartsRoundOverPage extends Page {
-    static #ID = "hearts-round-over-page";
+    static ID = "hearts_round_over_page";
     static #TITLE_ID = 'main-title';
     static #NEW_ROUND_BUTTON_ID = 'new-round-button';
     #firebaseListeners;
@@ -79,6 +79,6 @@ export default class HeartsRoundOverPage extends Page {
     }
 
     getId(){
-        return HeartsRoundOverPage.#ID;
+        return HeartsRoundOverPage.ID;
     }
 }

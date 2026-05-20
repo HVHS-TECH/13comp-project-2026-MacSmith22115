@@ -1,0 +1,30 @@
+{
+    "pages": ["admin_page"],
+    "args":{
+        "user": {
+            "select": {
+                "-": {
+                    "*": "admin/SelectUser.mjs"
+                }
+            }, 
+            "get": {
+                "name": {
+                    "*": "admin/GetName.mjs"
+                },
+                "age": {
+                    "*": "admin/GetAge.mjs"
+                }
+            },
+            "set": {
+                "name": {
+                    "-": {
+                        "*": "admin/SetName.mjs"
+                    }
+                }, 
+                "age": {
+                    "-": "admin/SetAge.mjs"
+                }
+            }
+        }
+    }
+}
