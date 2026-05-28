@@ -39,12 +39,12 @@ export default class AdminPage extends Page {
             this.createElement('h1', {
                 textContent: "Admin Page"
             }),
+            this.createElement('p', {
+                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
+            }),
             this.createElement('input', {
                 type: 'text',
                 id: Terminal.TERMINAL_INPUT_ELEMENT_ID
-            }),
-            this.createElement('p', {
-                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
             })
         ])
     }

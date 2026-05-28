@@ -65,7 +65,7 @@ export default class Page {
     * Throws: [getHTML() || getId()] If not overriden by child
     *****************************************************************/
     async preDisplay(){}
-    onDisplay(){}
+    async onDisplay(){}
     onRemove(){}
     getHTML(){this.#throwError("Extend Page.mjs to Override 'getHTML()' Before Use")}
     getId(){this.#throwError("Extend Page.mjs to Override 'getId()' Before Use")}

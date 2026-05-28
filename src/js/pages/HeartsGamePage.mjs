@@ -247,19 +247,10 @@ export default class HeartsGamePage extends Page {
         });
     }
 
-
-
-
-    // If not turn -> false
-    // If they have C3, and NOT C3 -> false
-    // If first card -> true, false if heart and not broken
-    // If cant play onsuit -> true (Break Hearts);
-
-    // BUGGED! TODO: Fix allowing clubs when leading is diamonds
     canPlayCard(_card, _suit, _leadingSuit, _hasC3, _myTurn, _canPlayOnsuit, _heartsBroken){
         if (_myTurn){
             if (_hasC3){
-                return _card.id == 'c3';    // your turn, have C3 -> is C3 ? T/F;
+                return _card.id == 'c3';  
             } else {
                 if (_leadingSuit != null && _leadingSuit != undefined){
                     if (_canPlayOnsuit){
@@ -268,13 +259,12 @@ export default class HeartsGamePage extends Page {
                     } else {
                         return true;
                     }
-                    //return _canPlayOnsuit ? (_suit == _leadingSuit) : true;   // your turn, no C3, not first card -> can Onsuit ? (is onsuit ? T/F)/T
                 } else {
-                    return !_heartsBroken ? (_suit != 'hearts') : true; // your turn, no C3, first card -> hearts not broken ? (is not heart ? T/F)/T
+                    return !_heartsBroken ? (_suit != 'hearts') : true; 
                 }
             }
         } else {
-            return false;   // not your turn -> F
+            return false;
         }
     }
 
@@ -295,7 +285,7 @@ export default class HeartsGamePage extends Page {
         for (const [_player, _card] of Object.entries(playedCards)) {
             PLAYED_CARDS_ELEMENT.appendChild(this.createElement('h5', {
                 textContent: `${_player} : ${_card}`
-            }))
+            }));
         }
     }
 

@@ -29,12 +29,12 @@ export default class ProfilePage extends Page {
             this.createElement('h1', {
                 textContent: "Profile Page"
             }),
+            this.createElement('p', {
+                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
+            }),
             this.createElement('input', {
                 type: 'text',
                 id: Terminal.TERMINAL_INPUT_ELEMENT_ID
-            }),
-            this.createElement('p', {
-                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
             })
         ])
     }

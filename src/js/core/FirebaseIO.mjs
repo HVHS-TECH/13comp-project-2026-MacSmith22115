@@ -146,7 +146,6 @@ export default class FirebaseIO {
             } catch (_error){
                 console.error(`Error Unregistering Firebase Listener @ ${_wrapper.path}: ${_error}`);
             }
-
         })
     }
 

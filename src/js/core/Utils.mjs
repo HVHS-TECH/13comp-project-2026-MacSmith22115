@@ -7,6 +7,31 @@
  *  -> Provides Common Static Utility Methods
  ****************************************************************/
 export default class Utils {
+    static NAME_VALIDATION_RULE = (_input, _errors) => {
+        return true;
+    };
+    static EMAIL_VALIDATION_RULE = (_input, _errors) => {
+        return true;
+    };
+    static PFP_VALIDATION_RULE = (_input, _errors) => {
+        return true;
+    };
+    static AGE_VALIDATION_RULE = (_input, _errors) => {
+        let valid = true;
+        if (_input > 116){
+            _errors.push('Age Too Large, Please Enter Below 116');
+            if (valid) valid = false;
+        }
+        return valid;
+    };
+    static COLOUR_VALIDATION_RULE = (_input, _errors) => {
+        return true;
+    };
+    static PHONE_VALIDATION_RULE = (_input, _errors) => {
+        return true;
+    };
+
+
 
     /*****************************************************************
     * getNextElement(_array, _index);
@@ -74,5 +99,10 @@ export default class Utils {
 
     static objHasField(_obj, _field){
         return Object.hasOwn(_obj, _field);
+    }
+
+    static validateInput(_input ,_errors = [], _ruleCallback = () => {return true}){
+        const VALID = _ruleCallback(_input, _errors);
+        return VALID;
     }
 }   

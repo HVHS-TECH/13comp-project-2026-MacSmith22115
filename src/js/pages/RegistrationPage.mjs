@@ -5,7 +5,8 @@ import {
     PAGE_MANAGER_INSTANCE_KEY,
     FIREBASE_IO_INSTANCE_KEY,
     HOME_PAGE_CLASS_KEY,
-    TERMINAL_INSTANCE
+    TERMINAL_INSTANCE,
+    REGISTRATION_CACHE
 } from '../core/ReferenceStorage.mjs';
 import Terminal from '../core/Terminal.mjs';
 
@@ -31,11 +32,16 @@ export default class RegistrationPage extends Page {
     *****************************************************************/
     onDisplay() {
         const AUTH = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
+        Object.assign(REFERENCES[REGISTRATION_CACHE], AUTH);
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
         REFERENCES[TERMINAL_INSTANCE].systemPrint(`Captured Info... [${AUTH.name}, ${AUTH.email}]`);
         REFERENCES[TERMINAL_INSTANCE].systemPrint("Use 'details set ${catagory} -${data}'");
+
+        for (const [_field, _value] of Object.entries(REFERENCES[REGISTRATION_CACHE])){
+            REFERENCES[TERMINAL_INSTANCE].systemPrint(`Gathered ${_field} from Google: ${_value}`);
+        }
     }
 
     /*****************************************************************
@@ -52,12 +58,12 @@ export default class RegistrationPage extends Page {
                 id: 'title',
                 textContent: 'Register...'
             }),
+            this.createElement('p', {
+                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
+            }),
             this.createElement('input', {
                 type: 'text',
                 id: Terminal.TERMINAL_INPUT_ELEMENT_ID
-            }),
-            this.createElement('p', {
-                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
             })
         ])
     }

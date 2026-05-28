@@ -76,12 +76,12 @@ export default class LoginPage extends Page {
                 id: 'title',
                 textContent: 'This Is The Login Page!'
             }),
+            this.createElement('p', {
+                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
+            }),
             this.createElement('input', {
                 type: 'text',
                 id: Terminal.TERMINAL_INPUT_ELEMENT_ID
-            }),
-            this.createElement('p', {
-                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
             })
         ])
     }

@@ -4,16 +4,31 @@
         "register": {
             "name": {
                 "-": {
-                    "*": "register/RegisterName.mjs"
+                    "*": "registerName"
                 }
             }, 
             "age": {
                 "-": {
-                    "*": "register/RegisterAge.mjs"
+                    "*": "registerAge"
+                }
+            },
+            "phone": {
+                "-": {
+                    "*": "registerPhone"
+                }
+            },
+            "colour": {
+                "-": {
+                    "*": "registerColour"
+                }
+            },
+            "pfp": {
+                "-": {
+                    "*": "registerPfp"
                 }
             },
             "confirm": {
-                "*": "register/RegisterConfirm.mjs"
+                "*": "registerConfirm"
             }
         }
     }

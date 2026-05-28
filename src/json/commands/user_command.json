@@ -2,27 +2,64 @@
     "pages": ["admin_page"],
     "args":{
         "user": {
+            "list": {
+                "*": "listUsers"
+            },
             "select": {
                 "-": {
-                    "*": "admin/SelectUser.mjs"
+                    "*": "selectUser"
                 }
             }, 
             "get": {
                 "name": {
-                    "*": "admin/GetName.mjs"
+                    "*": "getName"
                 },
                 "age": {
-                    "*": "admin/GetAge.mjs"
+                    "*": "getAge"
+                },
+                "email": {
+                    "*": "getEmail"
+                }, 
+                "colour": {
+                    "*": "getColour"
+                },  
+                "phone": {
+                    "*": "getPhone"
+                }, 
+                "pfp": {
+                    "*": "getPfp"
                 }
             },
             "set": {
                 "name": {
                     "-": {
-                        "*": "admin/SetName.mjs"
+                        "*": "setName"
                     }
                 }, 
                 "age": {
-                    "-": "admin/SetAge.mjs"
+                    "-": {
+                        "*": "setAge"
+                    }
+                },
+                "email": {
+                    "-": {
+                        "*": "setEmail"
+                    }
+                }, 
+                "pfp": {
+                    "-": {
+                        "*": "setPfp"
+                    }
+                },
+                "colour": {
+                    "-": {
+                        "*": "setColour"
+                    }
+                },
+                "phone": {
+                    "-": {  
+                        "*": "setPhone"
+                    }
                 }
             }
         }

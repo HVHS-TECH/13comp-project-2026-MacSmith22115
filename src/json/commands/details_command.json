@@ -4,22 +4,54 @@
         "details": {
             "get": {
                 "name": {
-                    "*": "details/get/GetName.mjs"
+                    "*": "getName"
+                },
+                "email": {
+                    "*": "getEmail"
+                },
+                "pfp": {
+                    "*": "getPfp"
                 },
                 "age": {
-                    "*": "details/get/GetAge.mjs"
+                    "*": "getAge"
+                }, 
+                "colour": {
+                    "*": "getColour"
+                },
+                "phone": {
+                    "*": "getPhone"
                 }
             },
             "set": {
                 "name": {
                     "-": {
-                        "*": "details/set/SetName.mjs"
+                        "*": "setName"
                     }
                 }, 
+                "email": {
+                    "-": {
+                        "*": "setEmail"
+                    }
+                },
+                "pfp": {
+                    "-": {
+                        "*": "setPfp"
+                    }
+                },
                 "age": {
                     "-": {
-                        "*": "details/set/SetAge.mjs"
+                        "*": "setAge"
                     }
+                },
+                "colour": {
+                    "-": {
+                        "*": "setColour"
+                    }
+                },
+                "phone": {
+                    "-": {
+                        "*": "setPhone"
+                    }   
                 }
             }
         }

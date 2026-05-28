@@ -34,14 +34,11 @@ export default class Terminal {
         this.keydownListener = null;
     }
 
-    printCmdOutput(_output){
-        let msg = `~$ ${_output}`;
-
+    logCmd(_cmd){
         const ELEMENT = document.createElement('p');
-        ELEMENT.innerHTML = msg;
+        ELEMENT.innerHTML = `~$ ${_cmd}`;
         this.#outputElement.appendChild(ELEMENT);
-
-        this.#inputElement.value = "";
+        this.#inputElement.value = '';
     }
 
     systemPrint(_string){
@@ -53,12 +50,13 @@ export default class Terminal {
     readInput(){
         const INPUT = this.#inputElement.value;
         this.#inputElement.value = '';
+        this.logCmd(INPUT);
         this.executeCmd(INPUT.trim());
     }
 
     computeCommand(_args, _tree, _depth = 0, _captured = []){
         if (_depth >= _args.length){
-            return _tree["*"] !== undefined ? {path: _tree["*"], captured: _captured} : null;
+            return _tree["*"] !== undefined ? {func: _tree["*"], captured: _captured} : null;
         }
         const ARG = _args[_depth];
 
@@ -74,17 +72,21 @@ export default class Terminal {
     
 
     async executeCmd(_input){
-        const SPLIT_INPUT = _input.split(' ');
+        const SPLIT_INPUT = _input.toLowerCase().split(' ');
         const JSON = await Utils.fetchJSON(`commands/${SPLIT_INPUT[0]}_command.json`);
-        if (!JSON.pages.includes(REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().getId())) {
+        if (JSON == null){
+            this.systemPrint(`Syntax Error: Command '${SPLIT_INPUT[0]}' Not Found`);
             return;
         }
+        if (!JSON.pages.includes(REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().getId())) {
+            this.systemPrint(`Location Error: Command '${SPLIT_INPUT[0]}' Can't Be User Here`);
+            return;
+        }   
         const COMMAND = this.computeCommand(SPLIT_INPUT, JSON.args);
-        const PATH = COMMAND.path;
-        const ARGS = COMMAND.captured;
-
-        const MODULE = await import(`../commands/${PATH}`);
-        this.systemPrint(await MODULE.default(ARGS));
+        const FUNC = COMMAND.func;
+        const USER_ARGS = COMMAND.captured;
+        const RESULT = await (await import(`../commands/${SPLIT_INPUT[0]}Command.mjs`))[FUNC](USER_ARGS);
+        this.systemPrint(RESULT);
     }
 
     getInputElement(){
