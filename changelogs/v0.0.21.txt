@@ -1,17 +1,15 @@
-v0.0.20
+v0.0.21
 
 Log:
- - Setup functions to validate registration
- - refactored some terminal logic
+ - Styled the Login Screen
+ - NOTE: v0.0.20 I got input verification semi-working
 
 TODO NEXT:
+    -> Abstract out the html elements for terminal stuff into terminal class for easier reuse.
     -> Specify cards to remove when dealing equal sized hands
     -> Comment code
-    -> Validate Registration Stuff.
-    -> Create IO for terminal?
     -> Clean/Remove Card Code?
     -> Need some sort of way to log error when cmd is partially wrong... eg 'register namg -mac'
-    -> Validate Inputs
 
 THINK ABOUT:
 Filter out dead servers when loading server list.

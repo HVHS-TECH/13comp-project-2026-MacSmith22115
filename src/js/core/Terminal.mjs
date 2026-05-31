@@ -14,11 +14,6 @@ export default class Terminal {
         this.registerKeydownListener();
     }
 
-    static createIO(){
-        const CURRENT_PAGE = REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage();
-        //CURRENT_PAGE.createElement('')
-    }
-
     registerKeydownListener(){
         this.keydownListener = (_event) => {
             if (_event.key !== 'Enter') return;
@@ -35,13 +30,20 @@ export default class Terminal {
     }
 
     logCmd(_cmd){
-        const ELEMENT = document.createElement('p');
-        ELEMENT.innerHTML = `~$ ${_cmd}`;
-        this.#outputElement.appendChild(ELEMENT);
+        const INPUT_ELEMENT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
+        const LINE = document.createElement('div');
+        const INPUT = _cmd.trim();
+        LINE.className = "command-line";
+        LINE.innerHTML = `<span class="command-prompt">~$ </span><span class="command-input-text">${INPUT}</span>`; 
+        this.#outputElement.appendChild(LINE);
         this.#inputElement.value = '';
     }
 
     systemPrint(_string){
+        const LINE = document.createElement('div');
+        LINE.className = "command-line";
+        LINE.innerHTML = `<span class="command-prompt">${_string}</span>`
+
         const ELEMENT = document.createElement('p');
         ELEMENT.innerHTML = _string;
         this.#outputElement.appendChild(ELEMENT);

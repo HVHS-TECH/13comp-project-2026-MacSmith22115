@@ -38,7 +38,6 @@ export default class Page {
         this.#element.style.display = 'none';
         if (this.#element) _parent.append(this.#element);
         this.onDisplay();
-        document.getElementById(`${this.isSubPage() ? 'sub' : 'main'}_page_stylesheet`).href = `./src/css/${this.getId()}.css`;
         document.title = `13Comp: ${this.getId()}`;
         if (this.#element) this.#element.style.display = 'block';
     }
