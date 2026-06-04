@@ -36,9 +36,9 @@ export default class LoginPage extends Page {
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
-        REFERENCES[TERMINAL_INSTANCE].systemPrint("Terminal [Version 0.0.21]")
-        REFERENCES[TERMINAL_INSTANCE].systemPrint("(c) Macklyn Smith. All Rights Reserved")
-        REFERENCES[TERMINAL_INSTANCE].systemPrint("Use 'login google' To Continue...")
+        REFERENCES[TERMINAL_INSTANCE].printStr("Terminal [Version 0.0.22]")
+        REFERENCES[TERMINAL_INSTANCE].printStr("(!c) Macklyn Smith. No Rights Reserved")
+        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'login google' To Continue...")
     }
 
     onRemove() {
@@ -59,7 +59,7 @@ export default class LoginPage extends Page {
     async attemptLogin() {
         const FIREBASE_IO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const USER = await FIREBASE_IO.authViaGoogle();
-        const USER_RECORD = await FIREBASE_IO.read(`users/${USER.uid}`);
+        const USER_RECORD = await FIREBASE_IO.read(`users/${USER.uid.val}`);
         const PAGE_KEY = USER_RECORD != null ? HOME_PAGE_CLASS_KEY : REGISTRATION_PAGE_CLASS_KEY; // Check if user data exists
         const PAGE_CLASS = REFERENCES[PAGE_KEY];
         REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(PAGE_CLASS);
@@ -110,7 +110,7 @@ export default class LoginPage extends Page {
             ]),
 
             this.createElement('div', {
-                className: 'terminal-content'
+                id: 'terminal-content'
             }, [
                 this.createElement('div', {
                     id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
@@ -129,15 +129,7 @@ export default class LoginPage extends Page {
                         autofocus: true,
                     })
                 ])
-            ]),/*
-            this.createElement('h1', {
-                id: 'title',
-                textContent: 'This Is The Login Page!'
-            }),
-            this.createElement('input', {
-                type: 'text',
-                id: Terminal.TERMINAL_INPUT_ELEMENT_ID
-            })*/
+            ])
         ])
     }
 

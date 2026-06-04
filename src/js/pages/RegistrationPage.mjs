@@ -31,17 +31,22 @@ export default class RegistrationPage extends Page {
     * Throws: N/A
     *****************************************************************/
     onDisplay() {
-        const AUTH = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
+        const AUTH = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser(true);
         Object.assign(REFERENCES[REGISTRATION_CACHE], AUTH);
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
-        REFERENCES[TERMINAL_INSTANCE].systemPrint(`Captured Info... [${AUTH.name}, ${AUTH.email}]`);
-        REFERENCES[TERMINAL_INSTANCE].systemPrint("Use 'details set ${catagory} -${data}'");
+        REFERENCES[TERMINAL_INSTANCE].printStr(`Captured Info... [${AUTH.name.val}, ${AUTH.email.val}]`);
+        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register set ${catagory} -${data}'");
 
-        for (const [_field, _value] of Object.entries(REFERENCES[REGISTRATION_CACHE])){
-            REFERENCES[TERMINAL_INSTANCE].systemPrint(`Gathered ${_field} from Google: ${_value}`);
+        for (const [_field, _value] of Object.entries(REFERENCES[REGISTRATION_CACHE])) {
+            REFERENCES[TERMINAL_INSTANCE].printStr(`Gathered ${_field} from Google: ${_value.val}`);
         }
+    }
+
+    onRemove() {
+        REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
+        REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
     /*****************************************************************
@@ -53,18 +58,62 @@ export default class RegistrationPage extends Page {
     * Throws: N/A
     *****************************************************************/
     getHTML() {
-        return this.createElement('div', {}, [
-            this.createElement('h1', {
-                id: 'title',
-                textContent: 'Register...'
-            }),
-            this.createElement('p', {
-                id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
-            }),
-            this.createElement('input', {
-                type: 'text',
-                id: Terminal.TERMINAL_INPUT_ELEMENT_ID
-            })
+        return this.createElement('div', {
+            className: 'terminal-window'
+        }, [
+            this.createElement("div", {
+                className: "terminal-title-bar"
+            }, [
+                this.createElement("div", {
+                    className: "terminal-title-left-side"
+                }, [
+                    this.createElement('span', {
+                        textContent: "Terminal"
+                    })
+                ]),
+                this.createElement("div", {
+                    className: "terminal-title-center-side"
+                }, [
+                    this.createElement("span", {
+                        textContent: "?/13comp-project-2026-MacSmith22115/~",
+                        className: "terminal-title-tab"
+                    })
+                ]),
+                this.createElement("div", {
+                    className: "terminal-title-right-side"
+                }, [
+                    this.createElement("div", {
+                        className: "terminal-title-buttons"
+                    }, [
+                        this.createElement("button", {
+                            textContent: "X",
+                            className: "terminal-logout-button"
+                        })
+                    ])
+                ]),
+            ]),
+
+            this.createElement('div', {
+                id: 'terminal-content'
+            }, [
+                this.createElement('div', {
+                    id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
+                }),
+                this.createElement('div', {
+                    className: 'command-line'
+                }, [
+                    this.createElement('span', {
+                        className: 'command-prompt',
+                        textContent: '~$'
+                    }),
+                    this.createElement('input', {
+                        type: 'text',
+                        className: 'command-input',
+                        id: Terminal.TERMINAL_INPUT_ELEMENT_ID,
+                        autofocus: true,
+                    })
+                ])
+            ])
         ])
     }
 

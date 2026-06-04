@@ -1,0 +1,87 @@
+#hearts_lobby_browser_page #terminal-content {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+#hearts_lobby_browser_page {
+    font-family: Consolas, "Segoe UI", sans-serif;
+}
+
+#hearts_lobby_browser_page .col:nth-child(1) {
+    flex: 25%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.join-lobby-title {
+    text-align: center;
+}
+
+.create-lobby-div{
+    align-items: center;
+    margin-top: auto;
+    flex-direction: column;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+.create-lobby-div button {
+    background-color: transparent;
+    color: #c0c0c0;
+    border: none;
+    font-family: Consolas, "Segoe UI", sans-serif;
+    font-size: 25px;
+    margin-bottom: 15px;
+}
+
+.create-lobby-div button:hover{
+    text-decoration: underline;
+}
+
+.server-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.server-entry p {
+    margin: 0px;
+    font-family: Consolas, "Segoe UI", sans-serif;
+}
+
+.server-entry img {
+    width: 32px;
+    height: 32px;
+}
+
+.server-entry button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 17px;
+    font-family: Consolas, "Segoe UI", sans-serif;
+}
+
+.server-entry button:hover{
+    text-decoration: underline;
+}
+
+
+#hearts_lobby_browser_page .col:nth-child(2) {
+    flex: 40%;
+    display: flex;
+    justify-content: center;
+    
+    border-left: 5px dashed white;
+    border-right: 5px dashed white;
+}
+
+
+#hearts_lobby_browser_page .col:nth-child(3) {
+    flex: 20%;
+    display: flex;
+    justify-content: center;
+}

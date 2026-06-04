@@ -1,13 +1,14 @@
 import {REFERENCES, FIREBASE_IO_INSTANCE_KEY, REGISTRATION_CACHE, TERMINAL_INSTANCE} from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 
-async function attemptGet(_field){
+async function attemptGet(_field, _private = true){
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-    const USER = FBIO.authedUser();
+    const USER = FBIO.authedUser(true);
     let msg;
     let read = null;
-    if (USER != null){
-        read = await FBIO.read(`users/${USER.uid}/${_field}`);
+    if (USER != null){  
+        const PRIVATE_PATH_MODIFIER = _private ? 'private' : 'public';
+        read = await FBIO.read(`users/${USER.uid.val}/${PRIVATE_PATH_MODIFIER}/${_field}`);
         msg = `Read User's ${_field}: ${read}`;
     } else {
         msg = 'Login Error: Currently Not Logged In';
@@ -17,13 +18,20 @@ async function attemptGet(_field){
 
 async function attemptSet(_field, _data) {
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-    const USER = FBIO.authedUser()
+    const USER = FBIO.authedUser(true);
+    const ERRORS = [];
+    const IS_VALID_INPUT = Utils.validateInput(_data, ERRORS, Utils[`${_field.toUpperCase()}_VALIDATION_RULE`]);
     let msg;
     if (USER != null){
-        await FBIO.update(`users/${USER.uid}`, {
-            [_field] : _data
-        })
-        msg = `Updated User's ${_field}: ${_data}`;
+        if (IS_VALID_INPUT) {
+            await FBIO.update(`users/${USER.uid.val}`, {
+                [_field] : _data
+            })
+            msg = `Updated User's ${_field}: ${_data}`;
+        } else {
+            ERRORS.forEach(_error => REFERENCES[TERMINAL_INSTANCE].printStr(_error));
+            msg = `${_field} Validation Error: See Above For Details`;
+        }
     } else {
         msg = 'Login Error: Currently Not Logged In';
     }
@@ -31,7 +39,7 @@ async function attemptSet(_field, _data) {
 }
 
 export async function getName() {
-    return (await attemptGet('name')).msg;
+    return (await attemptGet('name', false)).msg;
 }
 
 export async function getEmail() {
@@ -39,7 +47,7 @@ export async function getEmail() {
 }
 
 export async function getPfp() {
-    return (await attemptGet('pfp')).msg;
+    return (await attemptGet('pfp', false)).msg;
 }
 
 export async function getAge() {

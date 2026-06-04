@@ -5,12 +5,14 @@ import {
     LOBBY_SESSION_INSTANCE_KEY,
     PAGE_MANAGER_INSTANCE_KEY,
     HOME_PAGE_CLASS_KEY,
-    HEARTS_GAME_PAGE_CLASS_KEY
+    HEARTS_GAME_PAGE_CLASS_KEY,
+    TERMINAL_INSTANCE
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 import Deck from "../game/Deck.mjs";
 import Card from "../game/Card.mjs";
 import HeartsGamePage from "./HeartsGamePage.mjs";
+import Terminal from "../core/Terminal.mjs";
 
 export default class HeartsRoundOverPage extends Page {
     static ID = "hearts_round_over_page";
@@ -19,24 +21,41 @@ export default class HeartsRoundOverPage extends Page {
     #firebaseListeners;
 
 
-    onDisplay(){
+    onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
+        const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
+        REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
+        REFERENCES[TERMINAL_INSTANCE].printStr("Round Over!");
+        REFERENCES[TERMINAL_INSTANCE].printStr(`WORK IN PROGRESS`);
+        REFERENCES[TERMINAL_INSTANCE].printStr(`Here Will Be Current Scores, Placings, etc`);
+        REFERENCES[TERMINAL_INSTANCE].printStr(`New Round Starts When Any Player Hits Button Below...`);
+        REFERENCES[TERMINAL_INSTANCE].printElement(this.createElement("div", { id: "terminal-buttons-div" }));
+        REFERENCES[TERMINAL_INSTANCE].printElement(
+            this.createElement('button', {
+                id: HeartsRoundOverPage.#NEW_ROUND_BUTTON_ID,
+                textContent: '[New Round]',
+                onclick: async () => {
+                    await this.resetGame();
+                }
+            }), "terminal-buttons-div");
         this.#firebaseListeners = FBIO.registerListeners({
-            [`lobbies/${LOBBY.getLobbyId()}/flags/gameStarted`] : async (_data) => {
+            [`lobbies/${LOBBY.getLobbyId()}/flags/gameStarted`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null) return;
                 if (!_data) return;
                 REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_GAME_PAGE_CLASS_KEY]);
             }
         });
+
     }
 
-    onRemove(){
+    onRemove() {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#firebaseListeners);
     }
 
-    async resetGame(){
+    async resetGame() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const PAGE_CLASS = REFERENCES[HEARTS_GAME_PAGE_CLASS_KEY];
@@ -62,23 +81,67 @@ export default class HeartsRoundOverPage extends Page {
     }
 
 
-    getHTML(){
-        return this.createElement('div', {}, [
-            this.createElement('h1', {
-                id: HeartsRoundOverPage.#TITLE_ID,
-                textContent: "Round Over!"
-            }),
-            this.createElement('button', {
-                id: HeartsRoundOverPage.#NEW_ROUND_BUTTON_ID,
-                textContent: 'New Round',
-                onclick: async () => {
-                    await this.resetGame();
-                }
-            })
+    getHTML() {
+        return this.createElement('div', {
+            className: 'terminal-window'
+        }, [
+            this.createElement("div", {
+                className: "terminal-title-bar"
+            }, [
+                this.createElement("div", {
+                    className: "terminal-title-left-side"
+                }, [
+                    this.createElement('span', {
+                        textContent: "Terminal"
+                    })
+                ]),
+                this.createElement("div", {
+                    className: "terminal-title-center-side"
+                }, [
+                    this.createElement("span", {
+                        textContent: "?/13comp-project-2026-MacSmith22115/~",
+                        className: "terminal-title-tab"
+                    })
+                ]),
+                this.createElement("div", {
+                    className: "terminal-title-right-side"
+                }, [
+                    this.createElement("div", {
+                        className: "terminal-title-buttons"
+                    }, [
+                        this.createElement("button", {
+                            textContent: "X",
+                            className: "terminal-logout-button"
+                        })
+                    ])
+                ]),
+            ]),
+
+            this.createElement('div', {
+                id: 'terminal-content'
+            }, [
+                this.createElement('div', {
+                    id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
+                }),
+                this.createElement('div', {
+                    className: 'command-line'
+                }, [
+                    this.createElement('span', {
+                        className: 'command-prompt',
+                        textContent: '~$'
+                    }),
+                    this.createElement('input', {
+                        type: 'text',
+                        className: 'command-input',
+                        id: Terminal.TERMINAL_INPUT_ELEMENT_ID,
+                        autofocus: true,
+                    })
+                ])
+            ])
         ])
     }
 
-    getId(){
+    getId() {
         return HeartsRoundOverPage.ID;
     }
 }

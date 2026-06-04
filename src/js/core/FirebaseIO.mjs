@@ -1,11 +1,11 @@
 // Imports 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import {getDatabase, set, ref, get, off,onValue,update, query,remove, orderByValue} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
-import {getAuth, GoogleAuthProvider, signInWithPopup, signOut} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { getDatabase, set, ref, get, off, onValue, update, query, remove, orderByValue, onDisconnect } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 import {
-    REFERENCES, 
+    REFERENCES,
     USER_IS_ADMIN_KEY
-} from '../core/ReferenceStorage.mjs'; 
+} from '../core/ReferenceStorage.mjs';
 
 /*****************************************************************
  * FirebaseIO.mjs
@@ -16,13 +16,13 @@ import {
  *  -> Provides a Layer of Abstraction for Handeling Database Operations
  *  -> Contains Methods for Reading, Writing & Authenticating via Google
  ****************************************************************/
-export default class FirebaseIO { 
+export default class FirebaseIO {
     #db; // Database Reference
 
     /*****************************************************************
     * @param {Object} _config - Firebase Config Object
     *****************************************************************/
-    constructor(_config){
+    constructor(_config) {
         this.#db = getDatabase(initializeApp(_config));
     }
 
@@ -40,13 +40,14 @@ export default class FirebaseIO {
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    async update(_path, _data, _callback = null){
+    async update(_path, _data, _pass = null, _fail = async (_error) => alert(`[FirebaseIO.mjs] Error: Check Console For Details`)) {
         try {
             const REF = ref(this.#getDatabase(), _path);
             await update(REF, _data);
-            if (_callback) _callback();
+            if (_pass) await _pass();
         } catch (_error) {
-            console.error(`Error Updating ${_data} @ ${_path}: ${_error}`)
+            console.error(`Error Updating ${_data} @ ${_path}: ${_error}`);
+            await _fail(_error);
         }
     }
 
@@ -59,22 +60,22 @@ export default class FirebaseIO {
     * Returns: Data, or Null.
     * Throws: N/A
     *****************************************************************/
-    async read(_path){
-        try { 
+    async read(_path) {
+        try {
             const REF = ref(this.#getDatabase(), _path);
             const SNAPSHOT = await get(REF);
             return SNAPSHOT.exists() ? SNAPSHOT.val() : null;
-        } catch (_error){
+        } catch (_error) {
             console.error(`Error Reading Data @ ${_path}: ${_error}`);
         }
     }
 
-    async remove(_path, _callback = null){
+    async remove(_path, _callback = null) {
         try {
             const REF = ref(this.#getDatabase(), _path);
             await remove(REF, _path);
             if (_callback) await _callback();
-        } catch (_error){
+        } catch (_error) {
             console.error(`Error Removing Data @ ${_path}: ${_error}`);
         }
     }
@@ -88,13 +89,13 @@ export default class FirebaseIO {
      * Returns: User's Data
      * Throws: N/A
      * *****************************************************************/
-    async authViaGoogle(){
+    async authViaGoogle() {
         const PROVIDER = new GoogleAuthProvider();
-        PROVIDER.setCustomParameters({prompt: 'select_account'});
+        PROVIDER.setCustomParameters({ prompt: 'select_account' });
         try {
-            const AUTH = await signInWithPopup(getAuth(), PROVIDER);
-            return this.#buildUserObject(AUTH.user);
-        } catch (_error){
+            const AUTH = (await signInWithPopup(getAuth(), PROVIDER));
+            return this.#buildUserObject(AUTH.user, true);
+        } catch (_error) {
             console.error(`Auth Via Google Failed: ${_error}`);
         }
     }
@@ -108,9 +109,9 @@ export default class FirebaseIO {
      * Returns: Array of registered Listeners, used to unregister listeners later.
      * Throws: N/A
      * *****************************************************************/
-    registerListeners(_listeners){
+    registerListeners(_listeners) {
         const REGISTERED_LISTENERS = [];
-        for (const [_path, _listener] of Object.entries(_listeners)){
+        for (const [_path, _listener] of Object.entries(_listeners)) {
             const REF = ref(this.#getDatabase(), _path);
             try {
                 const WRAPPER = (_data) => _listener(_data.exists() ? _data.val() : null);
@@ -122,7 +123,7 @@ export default class FirebaseIO {
                     path: _path,
                     initialized: false
                 })
-            } catch (_error){
+            } catch (_error) {
                 console.error(`Error Registering Firebase Listner @ ${_path}: ${_error}`);
             }
         };
@@ -137,17 +138,27 @@ export default class FirebaseIO {
      * Returns: N/A
      * Throws: N/A
      * *****************************************************************/
-    unregisterListeners(_listeners){
+    unregisterListeners(_listeners) {
         _listeners.forEach(_wrapper => {
             try {
-                if (_wrapper.ref && _wrapper.listener && _wrapper.type){
+                if (_wrapper.ref && _wrapper.listener && _wrapper.type) {
                     off(_wrapper.ref, _wrapper.type, _wrapper.listener)
                 }
-            } catch (_error){
+            } catch (_error) {
                 console.error(`Error Unregistering Firebase Listener @ ${_wrapper.path}: ${_error}`);
             }
         })
     }
+
+    async onClientDisconnect(_path){
+        const DB = this.#getDatabase();
+        const REF = ref(DB, _path)
+        const DISCONNECT = onDisconnect(REF);
+        await DISCONNECT.remove();
+        return DISCONNECT;  
+    }
+
+
 
     /*****************************************************************
      * #getDatabase();
@@ -157,7 +168,7 @@ export default class FirebaseIO {
      * Returns: Database Refernce
      * Throws: N/A
      * *****************************************************************/
-    #getDatabase(){
+    #getDatabase() {
         return this.#db;
     }
 
@@ -169,16 +180,16 @@ export default class FirebaseIO {
      * Returns: Database Refernce
      * Throws: N/A
      * *****************************************************************/
-    authedUser(){
+    authedUser(_extras = false) {
         const USER = getAuth().currentUser;
-        return USER != null ? this.#buildUserObject(USER) : null;
+        return USER != null ? this.#buildUserObject(USER, _extras) : null;
     }
 
-    async isAuthedAdmin(){
+    async isAuthedAdmin() {
         const AUTHED_USER = this.authedUser();
         if (AUTHED_USER == null) return false;
         let isAdmin = REFERENCES[USER_IS_ADMIN_KEY];
-        if (isAdmin == null){
+        if (isAdmin == null) {
             isAdmin = await this.read(`admins/${AUTHED_USER.uid}`) != null;
             REFERENCES[USER_IS_ADMIN_KEY] = isAdmin;
         }
@@ -194,10 +205,27 @@ export default class FirebaseIO {
      * Returns: Object containing core user info
      * Throws: N/A
      * *****************************************************************/
-    #buildUserObject(_user){
-        return {
+    #buildUserObject(_user, _extra = false) {
+        return _extra ? {
+            email: {
+                val: _user.email,
+                private: true
+            },
+            name: {
+                val: _user.displayName.replace(/\s/g, ""),
+                private: false
+            },
+            uid: {
+                val: _user.uid,
+                private: false,
+            },
+            pfp: {
+                val: _user.photoURL,
+                private: false
+            }
+        } : {
             email: _user.email,
-            name: _user.displayName,
+            name: _user.displayName.replace(/\s/g, ""),
             uid: _user.uid,
             pfp: _user.photoURL
         }

@@ -5,12 +5,14 @@ import {
     FIREBASE_IO_INSTANCE_KEY,
     LOBBY_SESSION_INSTANCE_KEY,
     HEARTS_GAME_PAGE_CLASS_KEY,
-    PAGE_MANAGER_INSTANCE_KEY
+    PAGE_MANAGER_INSTANCE_KEY,
+    TERMINAL_INSTANCE
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 import HeartsGamePage from "./HeartsGamePage.mjs";
 import Deck from "../game/Deck.mjs";
 import Card from "../game/Card.mjs";
+import Terminal from "../core/Terminal.mjs";
 
 
 /*****************************************************************
@@ -22,13 +24,13 @@ import Card from "../game/Card.mjs";
  * Description: 
  *  -> Acts as an intermediatry page between the lobby browser and game of 'Hearts
  ****************************************************************/
-export default class HeartsLobbyPage extends Page{
+export default class HeartsLobbyPage extends Page {
     static ID = 'hearts_lobby_page';
-    static #PLAYERS_LIST_ID = 'players_list'; 
+    static #PLAYERS_LIST_ID = 'players_list';
     static #START_GAME_BUTTON_ID = 'start_game_button';
     #firebaseListeners;
 
-    writeGameLobby(){
+    writeGameLobby() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const DECK = new Deck(...Card.TEMPLATES.map(_card => _card.id));
@@ -60,25 +62,169 @@ export default class HeartsLobbyPage extends Page{
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    onDisplay(){
-        document.getElementById(HeartsLobbyPage.#START_GAME_BUTTON_ID).onclick = () => {
+    onDisplay() {
+        /*document.getElementById(HeartsLobbyPage.#START_GAME_BUTTON_ID).onclick = () => {
             this.writeGameLobby();
-        }
+        }*/
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         if (!LOBBY) return;
         this.#firebaseListeners = REFERENCES[FIREBASE_IO_INSTANCE_KEY].registerListeners({
             [`lobbies/${LOBBY.getLobbyId()}/players`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (!_data) return;
-                this.fillTable();
+                await this.updateIndexs();
+                this.renderSlots();
             },
             [`lobbies/${LOBBY.getLobbyId()}/flags/gameStarted`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null) return;
                 if (!_data) return;
                 REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(HeartsGamePage);
+            },
+            [`lobbies/${LOBBY.getLobbyId()}/flags/ready`]: async (_data) => {
+                await LOBBY.generateCache();
+                this.markPlayersReady(_data);
+                this.quearyStartGame();
+            }
+        });
+        const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
+        const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
+        REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
+        REFERENCES[TERMINAL_INSTANCE].printStr("Game Selected: Hearts");
+        REFERENCES[TERMINAL_INSTANCE].printStr("Enter 'hearts readyup' to mark as ready'");
+        REFERENCES[TERMINAL_INSTANCE].printStr("Game Will Start Once All Ready");
+    }
+
+    onRemove() {
+        REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
+        REFERENCES[TERMINAL_INSTANCE] = null;
+    }
+
+    async updateIndexs() {
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const LOBBY_ID = LOBBY.getLobbyId();
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const CACHE = LOBBY.getLobbyCache();
+        const PLAYER_LIST = Object.values(CACHE.players);
+        const SELF_UID = FBIO.authedUser().uid;
+        const SELF_INXED = PLAYER_LIST.indexOf(SELF_UID);
+        if (SELF_INXED != 0) return;
+        FBIO.update(`lobbies/${LOBBY_ID}`, {
+            players: PLAYER_LIST
+        });
+
+    }
+
+    async quearyStartGame() {
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const CACHE = LOBBY.getLobbyCache();
+        const PLAYERS_LIST = Object.values(CACHE.players);
+        const LOBBY_FLAGS = CACHE.flags;
+        const READY_LIST = Object.keys(LOBBY_FLAGS.ready ?? {});
+
+        let shouldStart = true;
+        PLAYERS_LIST.forEach(_player => {
+            if (shouldStart && !READY_LIST.includes(_player)) {
+                shouldStart = false;
             }
         })
+
+        if (shouldStart) {
+            this.writeGameLobby();
+        }
+    }
+
+    async readPlayersDetails(_playerIds) {
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const PLAYERS = [];
+
+        for (let i = 0; i < _playerIds.length; i++) {
+            const RECORD = await FBIO.read(`users/${_playerIds[i]}/public`);
+            PLAYERS.push(RECORD);
+        }
+        return PLAYERS;
+    }
+
+    async markPlayersReady(_data) {
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY_SESSION = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+
+        if (LOBBY_SESSION == null) return;
+
+        const LOBBY_ID = LOBBY_SESSION.getLobbyId();
+        const PLAYERS_LIST = Object.values(await FBIO.read(`lobbies/${LOBBY_ID}/players`));
+
+        document.querySelectorAll('.player-ready').forEach(_element => _element.remove());
+        if (!_data) return;
+        Object.keys(_data).forEach(_uid => {
+            const INDEX = PLAYERS_LIST.indexOf(_uid);
+            document.getElementById(`player-${INDEX}-slot`).appendChild(this.createElement(
+                'p',
+                { textContent: 'Ready', classList: 'player-ready' }
+            ));
+        })
+    }
+
+    async renderSlots() {
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY_SESSION = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+
+        if (LOBBY_SESSION == null) return;
+
+        const LOBBY_ID = LOBBY_SESSION.getLobbyId();
+        const READ_RESULT = await FBIO.read(`lobbies/${LOBBY_ID}`);
+
+        if (READ_RESULT == null) return;
+
+        const PLAYERS = await this.readPlayersDetails(Object.values(READ_RESULT.players));
+        for (let i = 0; i < 4; i++) {
+            const SLOT = document.getElementById(`player-${i}-slot`);
+
+            if (!SLOT) continue;
+
+            SLOT.classList.remove('unfilled-player-slot', 'filled-player-slot');
+
+            while (SLOT.lastChild) {
+                SLOT.lastChild.remove();
+            }
+            if (i > (PLAYERS.length - 1)) {
+                SLOT.classList.add('unfilled-player-slot');
+                continue;
+            }
+            const PLAYER = PLAYERS[i];
+            const NAME_ELEMENT = this.createElement('p', { textContent: PLAYER.name });
+            SLOT.classList.add('filled-player-slot');
+            SLOT.appendChild(NAME_ELEMENT);
+        }
+    }
+
+    /*****************************************************************
+* fillTable();
+* Description:
+*   -> Dynamicalls Fills out a list of players
+* Params: N/A
+* Returns: N/A
+* Throws: N/A
+*****************************************************************/
+    async fillTable() {
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY_SESSION = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        if (LOBBY_SESSION != null) {
+            const LOBBY_UID = LOBBY_SESSION.getLobbyId();
+            const LOBBY = await FBIO.read(`lobbies/${LOBBY_UID}`);
+            if (LOBBY != null) {
+                const LIST = document.getElementById(HeartsLobbyPage.#PLAYERS_LIST_ID);
+                while (LIST.lastChild) {
+                    LIST.lastChild.remove();
+                }
+                Object.values(LOBBY.players).forEach((_uid) => {
+                    LIST.appendChild(this.createElement('li', {
+                        textContent: _uid
+                    }));
+                })
+            }
+        }
     }
 
     /*****************************************************************
@@ -89,36 +235,10 @@ export default class HeartsLobbyPage extends Page{
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    onRemove(){
+    onRemove() {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#firebaseListeners);
-    }
-
-    /*****************************************************************
-    * fillTable();
-    * Description:
-    *   -> Dynamicalls Fills out a list of players
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
-    *****************************************************************/
-    async fillTable(){
-        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        const LOBBY_SESSION = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        if (LOBBY_SESSION != null){
-            const LOBBY_UID = LOBBY_SESSION.getLobbyId();
-            const LOBBY = await FBIO.read(`lobbies/${LOBBY_UID}`);
-            if (LOBBY != null){
-                const LIST = document.getElementById(HeartsLobbyPage.#PLAYERS_LIST_ID);
-                while (LIST.lastChild){
-                    LIST.lastChild.remove();
-                }
-                Object.values(LOBBY.players).forEach((_uid) => {
-                    LIST.appendChild(this.createElement('li', {
-                        textContent: _uid
-                    }));  
-                })
-            }
-        }
+        REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
+        REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
     /*****************************************************************
@@ -129,8 +249,93 @@ export default class HeartsLobbyPage extends Page{
     * Returns: String of HTML tags
     * Throws: N/A
     *****************************************************************/
-    getHTML(){
-        return this.createElement('div', {}, [
+    getHTML() {
+        return this.createElement('div', {
+            className: 'terminal-window'
+        }, [
+            this.createElement("div", {
+                className: "terminal-title-bar"
+            }, [
+                this.createElement("div", {
+                    className: "terminal-title-left-side"
+                }, [
+                    this.createElement('span', {
+                        textContent: "Terminal"
+                    })
+                ]),
+                this.createElement("div", {
+                    className: "terminal-title-center-side"
+                }, [
+                    this.createElement("span", {
+                        textContent: "?/13comp-project-2026-MacSmith22115/~",
+                        className: "terminal-title-tab"
+                    })
+                ]),
+                this.createElement("div", {
+                    className: "terminal-title-right-side"
+                }, [
+                    this.createElement("div", {
+                        className: "terminal-title-buttons"
+                    }, [
+                        this.createElement("button", {
+                            textContent: "X",
+                            className: "terminal-logout-button"
+                        })
+                    ])
+                ]),
+            ]),
+
+            this.createElement('div', {
+                id: 'terminal-content'
+            }, [
+                this.createElement('div', { className: 'terminal-column-container' }, [
+                    this.createElement('div', { className: 'terminal-lhs' }, [
+                        this.createElement('div', {
+                            id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
+                        }),
+                        this.createElement('div', {
+                            className: 'command-line'
+                        }, [
+                            this.createElement('span', {
+                                className: 'command-prompt',
+                                textContent: '~$'
+                            }),
+                            this.createElement('input', {
+                                type: 'text',
+                                className: 'command-input',
+                                id: Terminal.TERMINAL_INPUT_ELEMENT_ID,
+                                autofocus: true,
+                            })
+                        ])
+                    ]),
+                    this.createElement('div', { className: 'terminal-rhs' }, [
+                        this.createElement('div', { className: 'player-slots-container' }, [
+                            this.createElement('div', {
+                                className: 'player-slot',
+                                id: 'player-0-slot'
+                            }),
+                            this.createElement('div', {
+                                className: 'player-slot',
+                                id: 'player-1-slot',
+                            }),
+                            this.createElement('div', {
+                                className: 'player-slot',
+                                id: "player-2-slot"
+                            }),
+                            this.createElement('div', {
+                                className: 'player-slot',
+                                id: 'player-3-slot'
+                            })
+                        ]),
+                        this.createElement('div', { className: 'gamerules-container' }, [
+
+                        ])
+                    ]),
+                ]),
+            ])
+        ])
+
+        /*return this.createElement('div', {}, [
             this.createElement('h1', {
                 id: 'title',
                 textContent: 'You Are In A Lobby'
@@ -142,7 +347,7 @@ export default class HeartsLobbyPage extends Page{
                 id: HeartsLobbyPage.#START_GAME_BUTTON_ID,
                 textContent: 'Start Game'
             })
-        ])
+        ])*/
     }
 
     /*****************************************************************
@@ -153,7 +358,7 @@ export default class HeartsLobbyPage extends Page{
     * Returns: String ID
     * Throws: N/A
     *****************************************************************/
-    getId(){
+    getId() {
         return HeartsLobbyPage.ID;
     }
 }

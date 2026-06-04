@@ -6,10 +6,12 @@ import {
     PAGE_MANAGER_INSTANCE_KEY,
     HOME_PAGE_CLASS_KEY,
     HEARTS_ROUND_OVER_PAGE_CLASS_KEY,
-    HEARTS_MATCH_OVER_PAGE_CLASS_KEY
+    HEARTS_MATCH_OVER_PAGE_CLASS_KEY,
+    TERMINAL_INSTANCE
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 import Card from "../game/Card.mjs";
+import Terminal from "../core/Terminal.mjs";
 // Match -> The game session
 // Round -> The individual game, played untill all cards are used. 
 // Trick -> 1 'round' of cards played by each player
@@ -40,13 +42,13 @@ export default class HeartsGamePage extends Page {
             const CARD_TEMPLATE = Card.getTemplate(_card);
             if (!TRICK_DATA.playedCards) TRICK_DATA.playedCards = {};
             if (!TRICK_DATA.leadingSuit) TRICK_DATA.leadingSuit = CARD_TEMPLATE.suit;
-            
+
             TRICK_DATA.playedCards[FBIO.authedUser().uid] = _card;
             await FBIO.update(`lobbies/${LOBBY_ID}`, {
                 trickData: TRICK_DATA
             })
 
-            if (!FLAGS.heartsBroken){
+            if (!FLAGS.heartsBroken) {
                 await FBIO.update(`lobbies/${LOBBY_ID}/flags`, {
                     heartsBroken: CARD_TEMPLATE.suit == 'hearts'
                 })
@@ -64,7 +66,7 @@ export default class HeartsGamePage extends Page {
         const NEXT_PLAYER = Utils.getNextElement(PLAYERS, PLAYERS.indexOf(CACHE.turn));
         const NEXT_PLAYER_INDEX = PLAYERS.indexOf(NEXT_PLAYER);
         const START_INDEX = CACHE.startIndex;
-        if (NEXT_PLAYER_INDEX == START_INDEX){
+        if (NEXT_PLAYER_INDEX == START_INDEX) {
             await this.onTrickOver();
         } else {
             await FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
@@ -73,16 +75,6 @@ export default class HeartsGamePage extends Page {
         }
     }
 
-
-    // Add Logic For New Round;
-    async onTurnStart() {
-        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const CACHE = LOBBY.getLobbyCache();
-        const START_INDEX = CACHE.startIndex;
-        const PLAYERS = Object.values(CACHE.players);
-        const PLAYER_INDEX = PLAYERS.indexOf(CACHE.turn);
-    }
 
     async onTrickOver() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
@@ -124,38 +116,39 @@ export default class HeartsGamePage extends Page {
                 turn: WINNING_PLAYER
             }, () => {
                 this.displayHand(LOBBY.isMyTurn());
+                this.updateTurnIndicator();
             })
             await LOBBY.generateCache();
             if (this.shouldEndRound()) {
                 LOBBY.markRoundOver(FBIO);
-            } else if (this.shouldEndMatch()){
+            } else if (await this.shouldEndMatch()) {
                 this.endMatch();
             }
 
         }
     }
 
-    shouldEndMatch(){
+    async shouldEndMatch() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const POINTS = LOBBY.getPoints();
+        const POINTS = await LOBBY.getPoints();
         let shouldEnd = false;
-        for (const [_uid, _score] of Object.entries(POINTS)){
-            if (!shouldEnd && _score >= 2) {
+        for (const [_uid, _score] of Object.entries(POINTS)) {
+            if (!shouldEnd && _score >= 100) {
                 shouldEnd = true;
             }
         }
         return shouldEnd;
     }
 
-    async endMatch(){
+    async endMatch() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         FBIO.update(`/lobbies/${LOBBY.getLobbyId()}/flags`, {
             matchOver: true
         })
     }
-    
-    async onMatchOver(){
+
+    async onMatchOver() {
         REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_MATCH_OVER_PAGE_CLASS_KEY]);
     }
 
@@ -163,13 +156,9 @@ export default class HeartsGamePage extends Page {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const HANDS = LOBBY.getLobbyCache().hands;
         let endRound = false;
-        Object.values(HANDS).forEach(_hand => {
-            const HAND_SIZE = Object.values(_hand).length;
-            if (HAND_SIZE == 0 && !endRound){
-                endRound = true;
-            }
-        })
-
+        if (HANDS == null) {
+            endRound = true;
+        }
         return endRound;
     }
 
@@ -193,7 +182,7 @@ export default class HeartsGamePage extends Page {
     compareCards(_leadingSuit, ..._cards) {
         let topCard = null;
         _cards.forEach((_card) => {
-            if (_card.getSuit() != _leadingSuit) return;    
+            if (_card.getSuit() != _leadingSuit) return;
 
             if (!topCard || _card.getValue() > topCard.getValue()) {
                 topCard = _card;
@@ -205,13 +194,36 @@ export default class HeartsGamePage extends Page {
     async onTurnChange() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const MY_TURN = LOBBY.isMyTurn();
-        document.getElementById(HeartsGamePage.#TURN_TITLE).textContent =
-            `It ${MY_TURN ? "Is" : "Isn't"} My Turn`
-        if (MY_TURN) this.onTurnStart();
         this.displayHand(MY_TURN);
+        this.updateTurnIndicator();
     }
 
-    canPlayOnsuit(_hand, _leading){
+
+    async updateTurnIndicator() {
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const CACHE = LOBBY.getLobbyCache();
+        const PLAYERS_LIST = Object.values(CACHE.players);
+        const TURN = CACHE.turn;
+        const CURRENT_INDEX = PLAYERS_LIST.indexOf(TURN);
+        const START_INDEX = CACHE.startIndex;
+
+        for (let i = 0; i < 4; i++){
+            const ELEMENT = document.getElementById(`player-${i}-turn-slot`);
+            ELEMENT.classList.remove('current-slot', 'start-slot');
+
+            if (i == CURRENT_INDEX){
+                ELEMENT.classList.add('current-slot');
+                ELEMENT.classList.remove('normal-slot');
+            } else if (i == START_INDEX){
+                ELEMENT.classList.add('start-slot');
+                ELEMENT.classList.remove('normal-slot');
+            } else { 
+                ELEMENT.classList.add('normal-slot');
+            }
+        }
+    }
+
+    canPlayOnsuit(_hand, _leading) {
         let val = false;
         _hand.forEach(_card => {
             const CARD = Card.getTemplate(_card);
@@ -221,10 +233,11 @@ export default class HeartsGamePage extends Page {
     }
 
     async displayHand(_myTurn) {
-        const LIST_ELEMENT = document.getElementById(HeartsGamePage.#HAND_LIST_ID);
+        const LIST_ELEMENT = document.getElementById('card-grid');
         while (LIST_ELEMENT.firstChild) {
             LIST_ELEMENT.firstChild.remove();
         }
+
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const HAND = Object.values(LOBBY.getLobbyCache().hands[FBIO.authedUser().uid]);
@@ -232,35 +245,65 @@ export default class HeartsGamePage extends Page {
         const LEADING_SUIT = TRICK_DATA.leadingSuit;
         const HAND_INCLUDES_C3 = HAND.includes('c3');
         const HEARTS_BROKEN = LOBBY.getLobbyCache().flags.heartsBroken ?? false;
-
+        const ONLY_HEARTS = this.hasOneSuit(HAND, 'hearts');
         let canOnSuit = this.canPlayOnsuit(HAND, LEADING_SUIT);
         HAND.forEach(_card => {
             const CARD = Card.getTemplate(_card);
             const SUIT = CARD.suit;
-            LIST_ELEMENT.appendChild(this.createElement('li', {}, [
-                this.createElement('button', {
-                    textContent: _card,
-                    onclick: () => this.playCard(_card),
-                    disabled: !this.canPlayCard(CARD, SUIT, LEADING_SUIT, HAND_INCLUDES_C3, _myTurn, canOnSuit, HEARTS_BROKEN)
-                })
-            ]))
+            const CAN_PLAY = this.canPlayCard(CARD, SUIT, LEADING_SUIT, HAND_INCLUDES_C3, _myTurn, canOnSuit, HEARTS_BROKEN, ONLY_HEARTS);
+            const ELEMENT = this.createElement('div', {
+                textContent: _card,
+                className: 'card',
+                onclick: () => {
+                    if (CAN_PLAY) this.playCard(_card)
+                }
+            });
+            ELEMENT.classList.add(`${CAN_PLAY ? 'play' : 'unplay'}able-card`);
+            LIST_ELEMENT.appendChild(ELEMENT);
         });
     }
 
-    canPlayCard(_card, _suit, _leadingSuit, _hasC3, _myTurn, _canPlayOnsuit, _heartsBroken){
-        if (_myTurn){
-            if (_hasC3){
-                return _card.id == 'c3';  
+    hasOneSuit(_hand, _suit){
+        let val = true;
+        _hand.forEach(_card => {
+            if (!val) return;
+            const CARD = Card.getTemplate(_card);
+            if (CARD.suit != _suit){
+                val = false;
+                return;
+            }
+        })
+        return val;
+    }
+
+    canPlayCard(_card, _suit, _leadingSuit, _hasC3, _myTurn, _canPlayOnsuit, _heartsBroken, _onlyHearts) {
+        if (_myTurn) {
+            if (_hasC3) {
+                return _card.id == 'c3';
             } else {
-                if (_leadingSuit != null && _leadingSuit != undefined){
-                    if (_canPlayOnsuit){
+                if (_leadingSuit != null && _leadingSuit != undefined) {
+                    if (_canPlayOnsuit) {
                         let isOnSuit = _suit == _leadingSuit;
                         return isOnSuit;
                     } else {
                         return true;
                     }
                 } else {
-                    return !_heartsBroken ? (_suit != 'hearts') : true; 
+                    if (_onlyHearts){
+                        return true;
+                    }
+                    if (_heartsBroken){
+                        return true;
+                    } else {
+                        return _suit != 'hearts';
+                    }
+                    /*
+                    if (!_heartsBroken && _onlyHearts){
+                        return true;
+                    } else {
+                        return _suit != 'hearts';
+                    }*/
+                    // Hearts broken || not only hearts
                 }
             }
         } else {
@@ -269,23 +312,24 @@ export default class HeartsGamePage extends Page {
     }
 
     displayPlayedCards() {
-        const PLAYED_CARDS_ELEMENT = document.getElementById(HeartsGamePage.#PLAYED_CARDS_LIST_ID);
-        if (PLAYED_CARDS_ELEMENT != null && PLAYED_CARDS_ELEMENT.lastChild != null) {
-            while (PLAYED_CARDS_ELEMENT.lastChild) {
-                PLAYED_CARDS_ELEMENT.lastChild.remove();
-            }
-        }
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        let playedCards;
-        try {
-            playedCards = LOBBY.getLobbyCache().trickData.playedCards;
-        } catch (_error) {
-            playedCards = {};
-        }
-        for (const [_player, _card] of Object.entries(playedCards)) {
-            PLAYED_CARDS_ELEMENT.appendChild(this.createElement('h5', {
-                textContent: `${_player} : ${_card}`
-            }));
+        const CACHE = LOBBY.getLobbyCache();
+        const PLAYER_LIST = Object.values(CACHE.players);
+        const TRICK_DATA = CACHE.trickData ?? {};
+        const PLAYED_CARDS = TRICK_DATA.playedCards ?? {};
+        document.querySelectorAll('.hearts-played-card').forEach(_element => _element.remove());
+        for (let i = 0; i < 4; i++) {
+            const SLOT_ELEMENT = document.getElementById(`player-${i}-turn-slot`);
+            if (SLOT_ELEMENT == null || SLOT_ELEMENT == undefined) continue;
+            const PLAYER = PLAYER_LIST[i];
+            if (PLAYER == null || PLAYER == undefined) continue;
+            const CARD = PLAYED_CARDS[PLAYER];
+            if (CARD == null || CARD == undefined) continue; 
+            const SCORE_ELEMENT = this.createElement('p', {
+                textContent: CARD,
+                className: 'hearts-played-card'
+            })
+            SLOT_ELEMENT.appendChild(SCORE_ELEMENT);
         }
     }
 
@@ -294,6 +338,11 @@ export default class HeartsGamePage extends Page {
         REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = null;
     }
 
+    async onPlayerLeave(){
+
+    }
+
+
     onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -301,6 +350,21 @@ export default class HeartsGamePage extends Page {
             [`lobbies/${LOBBY.getLobbyId()}`]: async (_data) => {
                 if (_data != null) return;
                 this.onDisconnect();
+            },
+            [`lobbies/${LOBBY.getLobbyId()}/players`]: async (_data) => {
+                if (_data == null || _data == undefined) return;
+                const SELF_UID = FBIO.authedUser().uid;
+                const OLD_CACHE = LOBBY.getLobbyCache();
+                const OLD_PLAYERS_LIST = Object.values(OLD_CACHE.players);
+                const OLD_LENGTH = OLD_PLAYERS_LIST.length;                
+                await LOBBY.generateCache();
+                const NEW_CACHE = LOBBY.getLobbyCache();
+                const NEW_PLAYERS_LIST = Object.values(NEW_CACHE.players)
+                const NEW_LENGTH = NEW_PLAYERS_LIST.length;
+                if (!NEW_PLAYERS_LIST.indexOf(SELF_UID) == 0) return;
+                if (NEW_LENGTH < OLD_LENGTH){
+                    LOBBY.closeLobby();
+                }
             },
             [`lobbies/${LOBBY.getLobbyId()}/turn`]: async (_data) => {
                 await LOBBY.generateCache();
@@ -320,51 +384,64 @@ export default class HeartsGamePage extends Page {
                 await LOBBY.generateCache();
                 if (_data == null) return;
                 this.displayScores();
-            }, 
+            },
             [`lobbies/${LOBBY.getLobbyId()}/flags/matchOver`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null || _data == false) return;
                 this.onMatchOver();
+            },
+            [`lobbies/${LOBBY.getLobbyId()}/trickData/leadingSuit`] : async (_data) => {
+                await LOBBY.generateCache();
+                this.displayGameStats();
             }
         });
+    }
+
+    async displayGameStats(){
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const CACHE = LOBBY.getLobbyCache();
+        const TRICK_DATA = await LOBBY.getTrickData();
+        let leading = TRICK_DATA.leadingSuit;
+        if (leading == null || leading == undefined) leading = 'None';
+        const PARENT_ELEMENT = document.getElementById('round-stats');
+        document.querySelectorAll('.leading-suit-stat').forEach(_element => _element.remove());
+        const CHILD_ELEMENT = this.createElement('p', {
+            textContent: `Leading Suit: ${leading}`,
+            className: 'leading-suit-stat'
+        });
+        PARENT_ELEMENT.appendChild(CHILD_ELEMENT);
+        
     }
 
     async displayScores() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const HTML_LIST = document.getElementById(HeartsGamePage.#SCORES_LIST_ID);
-
-        while (HTML_LIST.lastChild) {
-            HTML_LIST.lastChild.remove();
-        }
-
+        const CACHE = LOBBY.getLobbyCache();
+        const PLAYER_LIST = Object.values(CACHE.players);
         const SCORES = await LOBBY.getPoints(true);
-        SCORES.forEach(_entry => {
-            const ELEMENT = this.createElement('li', {}, [
-                this.createElement('h5', {
-                    textContent: `${_entry.player} : ${_entry.score}`,
-                    id: `scores_${_entry.player}_${_entry.score}`
-                })
-            ]);
-            HTML_LIST.appendChild(ELEMENT);
-        })
+
+        document.querySelectorAll('.hearts-score').forEach(_element => _element.remove());
+        for (let i = 0; i < 4; i++){
+            const SLOT_ELEMENT = document.getElementById(`player-${i}-turn-slot`);
+            if (SLOT_ELEMENT == null || SLOT_ELEMENT == undefined) continue;
+            const PLAYER = PLAYER_LIST[i];
+            if (PLAYER == null || PLAYER == undefined) continue;
+            const SCORE_ENTRY = SCORES.find(_entry => _entry.player == PLAYER);
+            if (SCORE_ENTRY == null || SCORE_ENTRY == undefined) continue;
+            const SCORE = SCORE_ENTRY.score;
+            if (SCORE == null || SCORE == undefined) continue;
+
+            const SCORE_ELEMENT = this.createElement('p', {
+                textContent: SCORE,
+                className: 'hearts-score'
+            })
+            SLOT_ELEMENT.appendChild(SCORE_ELEMENT);
+        }
     }
 
 
     onRoundOver() {
         REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_ROUND_OVER_PAGE_CLASS_KEY]);
-    }
-
-    triggerRoundOver() {
-
-    }
-
-    triggerNewMatch() {
-
-    }
-
-    resetMatch() {
-
     }
 
     // Points == bad...
@@ -381,7 +458,7 @@ export default class HeartsGamePage extends Page {
         //LOBBY.closeLobby();
     }
 
-    async writeGlobalPoints(){
+    async writeGlobalPoints() {
 
     }
 
@@ -389,11 +466,11 @@ export default class HeartsGamePage extends Page {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#firebaseListeners);
     }
 
-    static find3Cubs(_hands){
+    static find3Cubs(_hands) {
         let returnVal = null;
-        for (const [_player, _hand] of Object.entries(_hands)){
+        for (const [_player, _hand] of Object.entries(_hands)) {
             const CARD_IDS = Object.values(_hand);
-            if (CARD_IDS.includes('c3')){
+            if (CARD_IDS.includes('c3')) {
                 returnVal = _player
             }
         }
@@ -401,32 +478,132 @@ export default class HeartsGamePage extends Page {
     }
 
     getHTML() {
-        return this.createElement('div', {}, [
-            this.createElement('h1', {
-                id: HeartsGamePage.#TURN_TITLE
-            }),
-            this.createElement('ul', {
-                id: HeartsGamePage.#HAND_LIST_ID
-            }),
-            this.createElement('h1', {
-                textContent: 'Played Cards...'
-            }),
-            this.createElement('ul', {
-                id: HeartsGamePage.#PLAYED_CARDS_LIST_ID
-            }),
-            this.createElement('h1', {
-                textContent: 'Points:'
-            }),
-            this.createElement('ul', {
-                id: HeartsGamePage.#SCORES_LIST_ID
-            }),
-            this.createElement('button', {
-                id: HeartsGamePage.#CLOSE_LOBBY_BUTTON_ID,
-                textContent: "Exit Lobby",
-                onclick: async () => {
-                    await REFERENCES[LOBBY_SESSION_INSTANCE_KEY].closeLobby();
-                }
-            })
+        return this.createElement('div', {
+            className: 'terminal-window'
+        }, [
+            this.createElement("div", {
+                className: "terminal-title-bar"
+            }, [
+                this.createElement("div", {
+                    className: "terminal-title-left-side"
+                }, [
+                    this.createElement('span', {
+                        textContent: "Terminal"
+                    })
+                ]),
+                this.createElement("div", {
+                    className: "terminal-title-center-side"
+                }, [
+                    this.createElement("span", {
+                        textContent: "?/13comp-project-2026-MacSmith22115/~",
+                        className: "terminal-title-tab"
+                    })
+                ]),
+                this.createElement("div", {
+                    className: "terminal-title-right-side"
+                }, [
+                    this.createElement("div", {
+                        className: "terminal-title-buttons"
+                    }, [
+                        this.createElement("button", {
+                            textContent: "X",
+                            className: "terminal-logout-button"
+                        })
+                    ])
+                ]),
+            ]),
+
+            this.createElement('div', {
+                id: 'terminal-content'
+            }, [
+                this.createElement('div', { className: 'terminal-row-container' }, [
+                    this.createElement('div', { className: 'top-row' }, [
+                        this.createElement('div', { className: 'lhs' }, [
+                            this.createElement('div', { className: 'player-slots' }, [
+                                this.createElement('div', {
+                                    className: 'player-slot',
+                                    id: 'player-0-turn-slot'
+                                }),
+                                this.createElement('div', {
+                                    className: 'player-slot',
+                                    id: 'player-1-turn-slot'
+                                }),
+                                this.createElement('div', {
+                                    className: 'player-slot',
+                                    id: 'player-2-turn-slot'
+                                }),
+                                this.createElement('div', {
+                                    className: 'player-slot',
+                                    id: 'player-3-turn-slot'
+                                }),
+                            ])
+                        ]),
+                        this.createElement('div', { className: 'cent' }, [
+                            this.createElement('div', { className: 'turn-timer' }),
+                            this.createElement('div', { className: 'card-slot' })
+                        ]),
+                        this.createElement('div', { className: 'rhs' }, [
+                            this.createElement('div', { className: 'rhs-widgets' }, [
+                                this.createElement('div', { className: 'notepad' }),
+                                this.createElement('div', { 
+                                    className: 'round-stats', 
+                                    id: 'round-stats'
+                                 })
+                            ])
+                        ])
+                    ]),
+                    this.createElement('div', { className: 'bottom-row' }, [
+                        this.createElement('div', { className: 'lhs' }, [
+                            this.createElement('div', { className: 'card-icon' }, [])
+                        ]),
+                        this.createElement('div', { className: 'rhs' }, [
+                            this.createElement('div', { id: 'card-grid' }, [
+                                this.createElement('div', { className: 'card' }, [
+                                    this.createElement('p', { textContent: 'Card' })
+                                ]),
+                                this.createElement('div', { className: 'card' }, [
+                                    this.createElement('p', { textContent: 'Card' })
+                                ]),
+                                this.createElement('div', { className: 'card' }, [
+                                    this.createElement('p', { textContent: 'Card' })
+                                ]),
+                                this.createElement('div', { className: 'card' }, [
+                                    this.createElement('p', { textContent: 'Card' })
+                                ])
+                            ])
+                        ]),
+                    ])
+                ]),
+            ]),
+            /*
+            this.createElement('div', {}, [
+                this.createElement('h1', {
+                    id: HeartsGamePage.#TURN_TITLE
+                }),
+                this.createElement('ul', {
+                    id: HeartsGamePage.#HAND_LIST_ID
+                }),
+                this.createElement('h1', {
+                    textContent: 'Played Cards...'
+                }),
+                this.createElement('ul', {
+                    id: HeartsGamePage.#PLAYED_CARDS_LIST_ID
+                }),
+                this.createElement('h1', {
+                    textContent: 'Points:'
+                }),
+                this.createElement('ul', {
+                    id: HeartsGamePage.#SCORES_LIST_ID
+                }),
+                this.createElement('button', {
+                    id: HeartsGamePage.#CLOSE_LOBBY_BUTTON_ID,
+                    textContent: "Exit Lobby",
+                    onclick: async () => {
+                        await REFERENCES[LOBBY_SESSION_INSTANCE_KEY].closeLobby();
+                    }
+                })
+            ])
+                */
         ])
     }
 

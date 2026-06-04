@@ -43,27 +43,34 @@ export default class LobbySession {
                     lobbyOpen: true
                 }
             }
-        }, () => {
+        }, async () => {
             this.#lobbyId = LOBBY_UUID;
-            this.generateCache();
+            await this.generateCache();
             REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = this;
             if (_callback) _callback();
+            const PLAYER_LIST = Object.values(this.getLobbyCache().players);
+            const INDEX = PLAYER_LIST.indexOf(PLAYER_UID);
+            await FBIO.onClientDisconnect(`lobbies/${this.getLobbyId()}/players/${INDEX}`)
         });
     }
 
     async joinLobby(_id, _callback = null) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = await FBIO.read(`lobbies/${_id}`);
+        const PLAYER_UID = FBIO.authedUser().uid;
         if (LOBBY != null) {
             const PLAYERS = LOBBY.players != null ? Object.values(LOBBY.players) : [];
-            PLAYERS.push(FBIO.authedUser().uid);
+            PLAYERS.push(PLAYER_UID);
             await FBIO.update(`lobbies/${_id}`, {
                 players: PLAYERS
-            }, () => {
+            }, async () => {
                 this.#lobbyId = _id;
-                this.generateCache();
+                await this.generateCache();
                 REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = this;
                 if (_callback) _callback();
+                const PLAYER_LIST = Object.values(this.getLobbyCache().players);
+                const INDEX = PLAYER_LIST.indexOf(PLAYER_UID);
+                await FBIO.onClientDisconnect(`lobbies/${this.getLobbyId()}/players/${INDEX}`)
             })
         }
     }
@@ -117,14 +124,14 @@ export default class LobbySession {
         return this.#lobbyId;
     }
 
-    resetRound(){
+    resetRound() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = this;
         const CACHE = LOBBY.getLobbyCache();
 
         const FLAGS = CACHE.flags ?? {};
-        for (const [_flag, _val] of Object.entries(FLAGS)){
-            switch (_flag){
+        for (const [_flag, _val] of Object.entries(FLAGS)) {
+            switch (_flag) {
                 case 'roundOver':
                     FLAGS.roundOver = false;
                     break;

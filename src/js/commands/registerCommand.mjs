@@ -1,80 +1,105 @@
 import {
-    REFERENCES, 
-    FIREBASE_IO_INSTANCE_KEY, 
+    REFERENCES,
+    FIREBASE_IO_INSTANCE_KEY,
     REGISTRATION_CACHE,
     PAGE_MANAGER_INSTANCE_KEY,
-    HOME_PAGE_CLASS_KEY
+    HOME_PAGE_CLASS_KEY,
+    TERMINAL_INSTANCE
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 
-
-export async function registerName(_args) {
+async function tryPutCache(_field, _input, _private = true) {
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+    const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
     const AUTHED = isAuthed();
-    if (AUTHED) REFERENCES[REGISTRATION_CACHE].name = _args[0];
-    const str = AUTHED ? `Updated Name To... ${_args[0]}` : `Permission Denied: Not Logged In`;
-    return str;
+    const ERRORS = [];
+    const IS_VALID_INPUT = Utils.validateInput(_input, ERRORS, Utils[`${_field.toUpperCase()}_VALIDATION_RULE`]);
+    let msg;
+    if (AUTHED) {
+        if (IS_VALID_INPUT) {
+            msg = `Updated User's ${_field}: ${_input}`;
+            REFERENCES[REGISTRATION_CACHE][_field] = { val: _input, private: _private };
+        } else {
+            msg = `${_field} Validation Error: See Above For Details`;
+            ERRORS.forEach(_error => TERMINAL.printStr(_error));
+        }
+    } else {
+        msg = 'Permission Error: Login Required';
+    }
+    return msg;
 }
 
-export async function registerAge(_args){
-    const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-    const AUTHED = isAuthed();
-    if (AUTHED) REFERENCES[REGISTRATION_CACHE].age = _args[0];
-    return AUTHED ? `Registered Age... ${_args[0]}` : `Permission Error: Not Logged In`;
+export async function registerName(_args) {
+    return tryPutCache('name', _args[0], false);
+}
+
+export async function registerAge(_args) {
+    return tryPutCache('age', _args[0]);
 }
 
 export async function registerPhone(_args) {
-    const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-    const AUTHED = isAuthed();
-    if (AUTHED) REFERENCES[REGISTRATION_CACHE].phone = _args[0];
-    return AUTHED ? `Registered Phone... ${_args[0]}` : `Permission Error: Not Logged In`;
+    return tryPutCache('phone', _args[0]);
 }
 
-export async function registerColour(_args){
-    const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-    const AUTHED = isAuthed();
-    if (AUTHED) REFERENCES[REGISTRATION_CACHE].colour = _args[0];
-    return AUTHED ? `Registered Colour... ${_args[0]}` : `Permission Error: Not Logged In`;    
+export async function registerColour(_args) {
+    return tryPutCache('colour', _args[0]);
 }
 
-export async function registerConfirm(){
+export async function registerConfirm() {
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+    const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
     const AUTHED = isAuthed();
-    if (AUTHED){
-        const UID = FBIO.authedUser().uid;
-        validateData(REFERENCES[REGISTRATION_CACHE]);
-        await FBIO.update(`users/${UID}`, REFERENCES[REGISTRATION_CACHE], async () => {
-            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
-        })
+    const CACHE = REFERENCES[REGISTRATION_CACHE];
+    let msg;
+    const ERRORS = [];
+    if (AUTHED) {
+        const VALIDATION = await validateData(CACHE);
+        if (VALIDATION.valid) {
+            const UID = FBIO.authedUser().uid;
+            const PRIVATE = {};
+            const PUBLIC = {};
+            for (const [_key, _value] of Object.entries(CACHE)){
+                if (_value.private) {
+                    PRIVATE[_key] = _value.val;
+                } else {
+                    PUBLIC[_key] = _value.val;
+                }
+            }
+            await FBIO.update(`users/${UID}`, {
+                private: PRIVATE,
+                public: PUBLIC
+            }, async () => {
+                msg = "Finishing Registration... Please Stand By";
+                REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
+            }, async (_error) => {
+                msg = `Database Error: ${_error}`;
+            });
+        } else {
+            msg = "Validation Error: Could Not Complete Registration, See Above";
+            VALIDATION.errors.forEach(_error => TERMINAL.printStr(_error));
+        }
+    } else {
+        msg = "Permission Error: Not Logged In";
     }
-    return AUTHED ? `Writing Details to Firebase...` : 'Permission Denied: Not Logged In';
+    return msg;
 }
 
 async function validateData(_data) {
     const ERRORS = [];
-    let valid = true;
-    //TODO this could return true if phone is true, even if name is false;
-    valid = Utils.validateInput(_data.name, ERRORS, Utils.NAME_VALIDATION_RULE);
-    valid = Utils.validateInput(_data.email, ERRORS, Utils.EMAIL_VALIDATION_RULE);
-    valid = Utils.validateInput(_data.pfp, ERRORS, Utils.PFP_VALIDATION_RULE);
-    valid = Utils.validateInput(_data.age, ERRORS, Utils.AGE_VALIDATION_RULE);
-    valid = Utils.validateInput(_data.colour, ERRORS, Utils.COLOUR_VALIDATION_RULE);
-    valid = Utils.validateInput(_data.phone, ERRORS, Utils.PHONE_VALIDATION_RULE);
-    return valid;
-}
-
-async function validate(_field, _errors = [], _ruleCallback){
-    if (_field != null){
-        const VALID = _ruleCallback(_errors);
-        return true;
-    } else {
-        _errors.push(`Registration Error: ${_field} Not Found`);
-        return false;
-    }
+    let validName = Utils.validateInput(_data.name, ERRORS, Utils.NAME_VALIDATION_RULE);
+    let validEmail = Utils.validateInput(_data.email, ERRORS, Utils.EMAIL_VALIDATION_RULE);
+    let validPfp = Utils.validateInput(_data.pfp, ERRORS, Utils.PFP_VALIDATION_RULE);
+    let validAge = Utils.validateInput(_data.age, ERRORS, Utils.AGE_VALIDATION_RULE);
+    let validColour = Utils.validateInput(_data.colour, ERRORS, Utils.COLOUR_VALIDATION_RULE);
+    let validPhone = Utils.validateInput(_data.phone, ERRORS, Utils.PHONE_VALIDATION_RULE);
+    const OBJ = {
+        valid: validName && validEmail && validPfp && validAge && validColour && validPhone,
+        errors: ERRORS
+    };
+    return OBJ;
 }
 
 async function isAuthed() {
-    
     const USER = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
     return USER != null;
 }

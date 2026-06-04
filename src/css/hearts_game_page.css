@@ -1,0 +1,176 @@
+#hearts_game_page .terminal-row-container {
+    display: grid;
+    grid-template-rows: 0.7fr 0.3fr;
+    height: 100%;
+    min-height: 0;
+}
+
+.top-row, .bottom-row {
+    min-height: 0;
+}
+
+#hearts_game_page .top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 100%;
+    border-bottom: 3px solid #888;
+}
+
+#hearts_game_page #terminal-content {
+    min-height: 0;
+    overflow-y: auto;
+    flex:1;
+}
+
+#hearts_game_page #terminal-window {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+}
+
+#hearts_game_page .top-row .lhs {
+    display: flex;
+    justify-content: center;
+    border-right: 3px dashed #888;
+}
+
+#hearts_game_page .top-row .cent {
+    display: flex;
+    flex-direction: column;
+}
+
+#hearts_game_page .card-slot{
+    height: 60%;
+    aspect-ratio: 1;
+    margin: auto;
+    border-bottom: 3px solid #888;
+    border-top: 3px solid #888;
+    border-right: 3px dashed #888;
+    border-left: 3px dashed #888;
+}
+
+#hearts_game_page .turn-timer {
+    width: 70%;
+    height: 15%;
+    align-self: center;
+    border-bottom: 3px solid #888;
+    border-top: 3px solid #888;
+    border-left: 3px dashed #888;
+    border-right: 3px dashed #888;
+}
+
+#hearts_game_page .top-row .rhs {
+    display: flex;
+    justify-content: center;
+    border-left: 3px dashed #888;
+}
+
+
+
+#hearts_game_page .player-slots {
+    width: 80%;
+    height: 50%;
+    display: flex;
+}
+
+#hearts_game_page .current-slot {
+    height: 100%;
+}
+
+#hearts_game_page .normal-slot {
+    height: 60%;
+}
+
+#hearts_game_page .start-slot {
+    height: 40%;
+}
+
+#hearts_game_page .player-slot {
+    margin-right: 7%;
+    flex:1;
+    border-bottom: 3px solid #888;
+    border-top:3px solid #888;
+    border-left: 3px dashed #888;
+    border-right: 3px dashed #888;
+}
+
+#hearts_game_page .rhs-widgets {
+    height: 80%;
+    width: 60%;
+    display: grid;
+    grid-template-rows: 0.7fr 0.3fr;
+    border-top: 3px solid #888;
+    border-bottom: 3px solid #888;
+    border-left: 3px dashed #888;
+    border-right: 3px dashed #888;
+}
+
+#hearts_game_page .notepad {
+    border-bottom: 3px solid #888;
+}
+
+#hearts_game_page .bottom-row {
+    display: grid;
+    grid-template-columns: 0.5fr 1fr;
+}
+
+#hearts_game_page .card-icon {
+    height: 60%;
+    aspect-ratio: 1;
+    border-top: 3px solid #888;
+    border-bottom: 3px solid #888;
+    border-left: 3px dashed #888;
+    border-right: 3px dashed #888;
+}
+
+#hearts_game_page .bottom-row .lhs {
+      display: flex;
+    justify-content: center;
+    align-items: center;
+    border-right: 3px dashed #888;
+    border-left: 3px dashed #888;
+}
+
+#hearts_game_page .bottom-row .rhs {
+        min-width: 0;
+    overflow: hidden;
+    border-right: 3px dashed #888;
+}
+
+#hearts_game_page .playable-card {
+     border-bottom: 5px solid white;
+    border-top: 5px solid white;
+    border-right: 5px dashed white;
+    border-left: 5px dashed white;
+}   
+
+#hearts_game_page .unplayable-card {
+     border-bottom: 3px solid #888;
+    border-top: 3px solid #888;
+    border-right: 3px dashed #888;
+    border-left: 3px dashed #888;
+}
+
+#card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 50px);
+    gap: 16px;
+
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#hearts_game_page .card {
+    flex: 0 0 50px;
+    height: 75px;
+}
+
+#hearts_game_page .top-row > div,
+#hearts_game_page .bottom-row > div {
+    min-width: 0;
+}

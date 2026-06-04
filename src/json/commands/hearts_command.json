@@ -1,0 +1,13 @@
+{
+    "pages": ["hearts_lobby_page"],
+    "args": {
+        "hearts": {
+            "readyup": {
+                "*": "readyUp"
+            },
+            "unready": {
+                "*": "unreadyUp"
+            }
+        }
+    }
+}

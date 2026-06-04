@@ -1,0 +1,18 @@
+v0.0.22
+
+Log:
+ - Styled all pages
+ - Filled out input validation rules, and applied them to registeration, admin and profile
+ - Fixed some problems with game
+- Filterd out dead servers when loading server list.
+
+TODO NEXT:
+    -> Abstract out the html elements for terminal stuff into terminal class for easier reuse.
+    -> Specify cards to remove when dealing equal sized hands
+    -> Comment code
+    -> Clean/Remove Card Code?
+    -> Need some sort of way to log error when cmd is partially wrong... eg 'register namg -mac'
+
+THINK ABOUT:
+private servers accessed with uuid? not findable in server finder?
+Firebase rules block cmd's, NEED WAY TO LOG THAT
