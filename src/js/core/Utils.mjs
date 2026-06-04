@@ -109,7 +109,7 @@ export default class Utils {
    * Throws: Error if encounted while fetching the JSON.
    *****************************************************************/
     static async fetchJSON(_path) {
-        const FULL_PATH = `/src/json/${_path}`;
+        const FULL_PATH = `./src/json/${_path}`;
         try {
             const RESPONSE = await fetch(FULL_PATH);
             if (!RESPONSE.ok) {

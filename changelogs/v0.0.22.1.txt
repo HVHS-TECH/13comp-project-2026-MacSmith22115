@@ -1,0 +1,4 @@
+v0.0.22.1 HOTFIX
+
+HOTFIX LOG:
+- Made 'fetchJSON' use reletive paths, allowing it to work on github pages
