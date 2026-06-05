@@ -37,7 +37,8 @@ export default class RegistrationPage extends Page {
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
         REFERENCES[TERMINAL_INSTANCE].printStr(`Captured Info... [${AUTH.name.val}, ${AUTH.email.val}]`);
-        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register set ${catagory} -${data}'");
+        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register ${catagory} -${data}'");
+        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register confirm' To Continue...");
 
         for (const [_field, _value] of Object.entries(REFERENCES[REGISTRATION_CACHE])) {
             REFERENCES[TERMINAL_INSTANCE].printStr(`Gathered ${_field} from Google: ${_value.val}`);

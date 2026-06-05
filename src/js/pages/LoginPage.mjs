@@ -36,7 +36,7 @@ export default class LoginPage extends Page {
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
-        REFERENCES[TERMINAL_INSTANCE].printStr("Terminal [Version 0.0.22]")
+        REFERENCES[TERMINAL_INSTANCE].printStr("Terminal [Version 0.0.22.2]")
         REFERENCES[TERMINAL_INSTANCE].printStr("(!c) Macklyn Smith. No Rights Reserved")
         REFERENCES[TERMINAL_INSTANCE].printStr("Use 'login google' To Continue...")
     }

@@ -1,0 +1,4 @@
+v0.0.22.2 HOTFIX
+
+HOTFIX LOG:
+- Re-wrote Registration Text to reflect process.

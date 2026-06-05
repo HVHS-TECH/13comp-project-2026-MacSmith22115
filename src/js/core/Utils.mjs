@@ -23,10 +23,11 @@ export default class Utils {
             _errors.push('Name Contains Too Many Characters, Max 100');
             if (valid) valid = false;
         }
-        if (!REGEX.test(_input)) {
+        console.log(_input);
+        /*if (!REGEX.test(_input)) {
             _errors.push('Name Can Not Contain Whitespaces.')
             if (valid) valid = false;
-        }
+        }*/
         if (!isNaN(_input)) {
             _errors.push('Name Can Not Consist Only Of Numbers.');
             if (valid) valid = false;
