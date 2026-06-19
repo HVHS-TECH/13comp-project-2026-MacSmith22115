@@ -68,9 +68,9 @@ export default class LoginPage extends Page {
     /*****************************************************************
     * getHTML();
     * Description:
-    *   -> Returns a string containing HTML tags
+    *   -> creates the html elements required for the page
     * Params: N/A
-    * Returns: String of HTML tags
+    * Returns: An html element
     * Throws: N/A
     *****************************************************************/
     getHTML() {

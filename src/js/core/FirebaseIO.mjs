@@ -11,7 +11,6 @@ import {
  * FirebaseIO.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 2/3/26
  * Description: 
  *  -> Provides a Layer of Abstraction for Handeling Database Operations
  *  -> Contains Methods for Reading, Writing & Authenticating via Google
@@ -32,15 +31,21 @@ export default class FirebaseIO {
     * Description:
     *   -> Updates existing data in the database
     *   -> If data at the path was not existent, it is written
-    *   -> calls the optional callback if sucessful
+    *   -> calls the optional callback if sucessful, or if error
     * Params: 
     *   -> '_path': Path to write data to
     *   -> '_data': Data to write
-    *   -> '_callback': Optional Callback Function
+    *   -> '_pass': Optional Callback Function called on a sucessful update
+    *   -> '_fail': Optional Callback function called on a error
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
-    async update(_path, _data, _pass = null, _fail = async (_error) => alert(`[FirebaseIO.mjs] Error: Check Console For Details`)) {
+    async update(
+        _path, 
+        _data, 
+        _pass = null, 
+        _fail = async (_error) => alert(`[FirebaseIO.mjs] Error: Check Console For Details`)
+    ) {
         try {
             const REF = ref(this.#getDatabase(), _path);
             await update(REF, _data);
@@ -150,15 +155,20 @@ export default class FirebaseIO {
         })
     }
 
+    /*****************************************************************
+     * onClientDisconnect(_path);
+     * Description:
+     *    -> Registers the path in the firebase to be removed if the user disconnects
+     * Params: '_path': Path to remove
+     * Returns: N/A
+     * Throws: N/A
+     * *****************************************************************/
     async onClientDisconnect(_path){
         const DB = this.#getDatabase();
         const REF = ref(DB, _path)
         const DISCONNECT = onDisconnect(REF);
         await DISCONNECT.remove();
-        return DISCONNECT;  
     }
-
-
 
     /*****************************************************************
      * #getDatabase();
@@ -173,11 +183,11 @@ export default class FirebaseIO {
     }
 
     /*****************************************************************
-     * #getDatabase();
+     * authedUser();
      * Description:
-     *    -> Returns the database reference;
+     *    -> Gets the currently authed user;
      * Params: N/A
-     * Returns: Database Refernce
+     * Returns: User's details, or Null
      * Throws: N/A
      * *****************************************************************/
     authedUser(_extras = false) {
@@ -185,6 +195,14 @@ export default class FirebaseIO {
         return USER != null ? this.#buildUserObject(USER, _extras) : null;
     }
 
+    /*****************************************************************
+     * #isAuthedAdmin();
+     * Description:
+     *    -> Checks if the cauthed user is an admin;
+     * Params: N/A
+     * Returns: True if they are an admin, false if they are not logged in or are not admin
+     * Throws: N/A
+     * *****************************************************************/
     async isAuthedAdmin() {
         const AUTHED_USER = this.authedUser();
         if (AUTHED_USER == null) return false;
@@ -202,6 +220,7 @@ export default class FirebaseIO {
      *    -> Returns the d
      * Params:
      *  -> '_user': Full user data captured from 'authViaGoogle()';
+     *  -> '_extra': Wether extra details should be included
      * Returns: Object containing core user info
      * Throws: N/A
      * *****************************************************************/

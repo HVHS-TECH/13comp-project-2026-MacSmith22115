@@ -1,22 +1,50 @@
-import { FIREBASE_IO_INSTANCE_KEY, REFERENCES } from "../core/ReferenceStorage.mjs";
+import { 
+    FIREBASE_IO_INSTANCE_KEY, 
+    REFERENCES 
+} from "../core/ReferenceStorage.mjs";
 
+/*****************************************************************
+ * Card.mjs
+ * @author MacSmith22115
+ * Created: Term #2 2026
+ * Description: 
+ *      -> Provieds a wrapper for an id, suit and value, used as a playing card.
+ ****************************************************************/
 export default class Card {
-    static TEMPLATES = [];
+    static TEMPLATES = []; // each 'card' is stored as an object, read from DB
 
     #id
     #suit
     #value
 
+    /*****************************************************************
+    * @param {String} _id - Element to read inputs from
+    * @param {String} _suit - The cards
+    * @param {Integer} _value - Cards numberical value. 
+    *****************************************************************/
     constructor(_id, _suit, _value){
         this.#id = _id;
         this.#suit = _suit;
         this.#value = _value;
     }
 
+    
+    /*****************************************************************
+    * Description:
+    *   ->  Reads card data from database and caches it into TEMPLATES
+    *****************************************************************/
     static async loadTemplates(){
-        this.TEMPLATES = Object.values(await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read('/cards'));
+        Card.TEMPLATES = Object.values(await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read('/cards'));
     }
 
+    
+    /*****************************************************************
+    * Params: 
+    *   '_template': Object from 
+    * Description:
+    *   ->  Uses Recursion to traverse down _tree, which is a JSON Object
+    *   -> Effectivly checks if an array of words is expected in _tree
+    *****************************************************************/
     static from(_template){
         if (_template.id == null || _template.suit == null || _template.value == null){
             console.error(`Failed to Construct Card: Field was Null`);

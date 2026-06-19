@@ -35,7 +35,12 @@ export default class HeartsLobbyPage extends Page {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const DECK = new Deck(...Card.TEMPLATES.map(_card => _card.id));
         const PLAYERS = (Object.values(LOBBY.getLobbyCache().players));
-        const HANDS = Deck.assignHands(DECK.deal(PLAYERS.length, true).hands, PLAYERS);
+        const HANDS = Deck.assignHands(DECK.deal(
+            PLAYERS.length, 
+            true, 
+            Utils.HEARTS_PRIORITY_REMOVAL_CARDS, 
+            Utils.HEARTS_PROTECTED_CARDS
+        ).hands, PLAYERS);
         const LEADING_PLAYER = HeartsGamePage.find3Cubs(HANDS);
         const START_INDEX = PLAYERS.indexOf(LEADING_PLAYER);
         FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
@@ -244,9 +249,9 @@ export default class HeartsLobbyPage extends Page {
     /*****************************************************************
     * getHTML();
     * Description:
-    *   -> Returns a string containing HTML tags
+    *   -> creates the html elements required for the page
     * Params: N/A
-    * Returns: String of HTML tags
+    * Returns: An html element
     * Throws: N/A
     *****************************************************************/
     getHTML() {

@@ -1,3 +1,4 @@
+// Imports
 import Page from './Page.mjs';
 import {
     REFERENCES,
@@ -9,13 +10,33 @@ import {
 } from '../core/ReferenceStorage.mjs';
 import Terminal from '../core/Terminal.mjs';
 
+/*****************************************************************
+ * LoginPage.mjs
+ * @author MacSmith22115
+ * Created: Term #2 2026
+ * @extends Page
+ * Description: 
+ *  -> Accessable ONLY by users flagged as 'admin' by DB
+ *  -> Provides a space for admins to change and view data of all other users
+ *  -> Admins can only be added or removed via firebase console
+ ****************************************************************/
 export default class AdminPage extends Page {
     static ID = 'admin_page';
-    selectedUser = null;
+    selectedUser = null;  
 
-    preDisplay() {
-    }
-
+    
+    /*****************************************************************
+    * onDisplay();
+    * Description:
+    *   -> Runs Code on the page being displayed
+    *   -> In this instance the following is done:
+    *       -> User is checked for admin flag in DB.
+    *       -> If flag not found, user is sent back to home page.
+    *       -> Register a new terminal, providing the input and output elements. 
+    * Params: N/A
+    * Returns: N/A
+    * Throws: N/A
+    *****************************************************************/
     async onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const IS_ADMIN = FBIO.isAuthedAdmin();
@@ -31,15 +52,41 @@ export default class AdminPage extends Page {
         INPUT.focus();
     }
 
+    /*****************************************************************
+    * onRemove();
+    * Description:
+    *   -> Runs Code on the page being removed (not displayed)
+    *   -> In this instance the following is done:
+    *       -> Termianl instance is unregistered.
+    * Params: N/A
+    * Returns: N/A
+    * Throws: N/A
+    *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
+    /*****************************************************************
+    * getId();
+    * Description:
+    *   -> Returns a string ID of the page
+    * Params: N/A
+    * Returns: String ID
+    * Throws: N/A
+    *****************************************************************/
     getId() {
         return AdminPage.ID;
     }
 
+    /*****************************************************************
+    * getHTML();
+    * Description:
+    *   -> creates the html elements required for the page
+    * Params: N/A
+    * Returns: An html element
+    * Throws: N/A
+    *****************************************************************/
     getHTML() {
         return this.createElement('div', {
             className: 'terminal-window'

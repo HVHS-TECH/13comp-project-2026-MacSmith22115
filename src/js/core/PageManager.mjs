@@ -2,7 +2,6 @@
  * PageManager.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 7/3/26
  * Description: 
  *  -> Provides Methods for managing the display of pages.
  *  -> Tracks currently displayed pages.

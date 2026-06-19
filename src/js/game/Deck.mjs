@@ -58,8 +58,8 @@ export default class Deck {
     * Returns: Object containing an array of hands dealt, and an array of remaining cards.
     * Throws: N/A
     *****************************************************************/
-    deal(_count, _splitRemainder = false){
-        return _splitRemainder ? this.#dealEqual(_count) : this.#dealAll(_count);
+    deal(_count, _equalSized = false, _priorityRemoval = [], _denyRemoval = []){
+        return  _equalSized ? this.#dealEqual(_count, _priorityRemoval, _denyRemoval) : this.#dealAll(_count);
     }
 
     /*****************************************************************
@@ -70,22 +70,33 @@ export default class Deck {
     * Returns: Object containing an array of hands dealt, and an array of remaining cards.
     * Throws: N/A
     *****************************************************************/
-    #dealEqual(_count){
-        const HANDS = Array.from({length: _count}, () => ({}));
+    #dealEqual(_count, _priorityRemoval = [], _denyRemoval = []){
         const TOTAL_CARDS = this.size();
-        const PER_HAND = Math.floor(TOTAL_CARDS / _count);
-        const REMAINDER_COUNT = TOTAL_CARDS % _count;
-        for (let dealRound = 0; dealRound < PER_HAND; dealRound++){
-            for (let playerIndex = 0; playerIndex < _count; playerIndex++){
-                const CARD = this.drawCard();
-                HANDS[playerIndex][CARD] = CARD;
+        const TOTAL_PLAYERS = _count;
+        const COUNT_TO_REMOVE = TOTAL_CARDS - Math.trunc(TOTAL_CARDS / TOTAL_PLAYERS) * TOTAL_PLAYERS;
+        const REMOVED_CARDS = [];
+        for (let i = 0; i < COUNT_TO_REMOVE; i++){
+            const PRIORITY = _priorityRemoval[i];
+            if (PRIORITY != null && this.hasCard(PRIORITY)){
+                this.removeCard(PRIORITY);
+                REMOVED_CARDS.push(PRIORITY);
+            } else {
+                let foundCard = false;
+                let index = 0;
+                while (!foundCard){
+                    const CARD_AT_INDEX = this.getCards()[index];
+                    if (_denyRemoval.includes(CARD_AT_INDEX)){
+                        index++;
+                        continue;
+                    }
+                    foundCard = true;
+                    this.removeCard(CARD_AT_INDEX);
+                    REMOVED_CARDS.push(CARD_AT_INDEX);
+                }
             }
         }
-        const REMAINDER_CARDS = [];
-        for (let i = 0; i < REMAINDER_COUNT; i++){
-            REMAINDER_CARDS.push(this.drawCard());
-        }
-        return {hands: HANDS, remainder: REMAINDER_CARDS};
+        this.shuffle();
+        return this.#dealAll(_count, REMOVED_CARDS);
     }
     
     /*****************************************************************
@@ -96,7 +107,7 @@ export default class Deck {
     * Returns: Object containing an array of hands dealt, and an array of remaining cards (0).
     * Throws: N/A
     *****************************************************************/
-    #dealAll(_count){
+    #dealAll(_count, _remainder = []){
         const HANDS = Array.from({length: _count}, () => ({}));
         let playerIndex = 0;
         while(!this.isEmpty()){
@@ -104,7 +115,7 @@ export default class Deck {
             HANDS[playerIndex][CARD] = CARD;
             playerIndex = (playerIndex + 1) % _count;
         }
-        return {hands: HANDS, remainder: []};
+        return {hands: HANDS, remainder: _remainder};
     }
 
     /*****************************************************************
@@ -157,6 +168,15 @@ export default class Deck {
     *****************************************************************/
     getCards(){
         return this.#cards;
+    }
+
+    removeCard(_id){
+        const INDEX = this.getCards().indexOf(_id);
+        if (INDEX != -1) this.getCards().splice(INDEX, 1);
+    }
+
+    hasCard(_card){
+        return this.getCards().includes(_card);
     }
 
     /*****************************************************************

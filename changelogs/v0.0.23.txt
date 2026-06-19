@@ -1,0 +1,16 @@
+v0.0.22
+
+Log:
+ - LOTS of commenting
+ - UI polish and touchups to hearts game page.
+
+TODO NEXT:
+    -> Abstract out the html elements for terminal stuff into terminal class for easier reuse.
+    -> Specify cards to remove when dealing equal sized hands
+    -> Comment code
+    -> Clean/Remove Card Code?
+    -> Need some sort of way to log error when cmd is partially wrong... eg 'register namg -mac'
+    -> Remove empty strings from cmds before computation -> removes double-spaces
+
+THINK ABOUT:
+Firebase rules block cmd's, NEED WAY TO LOG THAT

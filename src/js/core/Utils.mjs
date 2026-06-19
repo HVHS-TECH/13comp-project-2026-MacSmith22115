@@ -23,11 +23,10 @@ export default class Utils {
             _errors.push('Name Contains Too Many Characters, Max 100');
             if (valid) valid = false;
         }
-        console.log(_input);
-        /*if (!REGEX.test(_input)) {
-            _errors.push('Name Can Not Contain Whitespaces.')
+        if (!REGEX.test(_input)) {
+            _errors.push('Name Can Not Contain Whitespaces.');
             if (valid) valid = false;
-        }*/
+        }
         if (!isNaN(_input)) {
             _errors.push('Name Can Not Consist Only Of Numbers.');
             if (valid) valid = false;
@@ -40,12 +39,6 @@ export default class Utils {
             _errors.push("Nullpointer Exception: No Email Found");
             return false;
         }
-        // TODO Remove
-        /*const REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!REGEX.test(_input)) {
-            _errors.push("Email Does Not Fit Standard Format Of 'person@entity.suffex'")
-            if (valid) valid = false;
-        }*/
         return valid;
     };
     static PFP_VALIDATION_RULE = (_input, _errors) => {
@@ -55,7 +48,6 @@ export default class Utils {
         }
         return true;
     };
-    //TODO What if not a number?
     static AGE_VALIDATION_RULE = (_input, _errors) => {
         if (_input == null || _input == undefined){
             _errors.push("Nullpointer Exception: No Age Found");
@@ -82,6 +74,8 @@ export default class Utils {
         }
         return true;
     };
+    static HEARTS_PRIORITY_REMOVAL_CARDS = ['d2', 'c2'];
+    static HEARTS_PROTECTED_CARDS = ['ha', 'hk', 'hq','hj', 'h10', 'h9', 'h8', 'h7', 'h6', 'h5', 'h4', 'h3', 'h2', 'sq'];
 
 
 

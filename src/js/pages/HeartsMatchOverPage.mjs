@@ -61,7 +61,6 @@ export default class HeartsMatchOverPage extends Page {
 
         const TURN = CACHE.turn;
         if (FBIO.authedUser().uid === TURN) {
-            console.log('ABOUT TO SCORE POINTS')
             for (const [_placing, _data] of Object.entries(POINTS)) {
                 const PLAYER = _data.player;
                 const RANKED_SCORE = this.getRankedScore(POINTS, _data);
@@ -69,7 +68,7 @@ export default class HeartsMatchOverPage extends Page {
 
                 await FBIO.update(`/scoreboard/hearts`, {
                     [PLAYER]: (OLD_TOTAL_SCORE + RANKED_SCORE)
-                }, () => console.log(`Scored Points for ${PLAYER}`));
+                });
             }
         }
     }

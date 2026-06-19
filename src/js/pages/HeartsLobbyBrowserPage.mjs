@@ -12,7 +12,6 @@ import LobbySession from "../game/LobbySession.mjs";
  * HeartsLobbyBrowserPage.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 2/3/26
  * @extends Page
  * Description: 
  *  -> Acts as a lobby browser for 'Hearts'
@@ -22,25 +21,21 @@ export default class HeartsLobbyBrowserPage extends Page {
     static ID = "hearts_lobby_browser_page";
     static #CREATE_LOBBY_BUTTON_ID = "create-lobby-button";
     static #ACTIVE_LOBBY_LIST_ID = 'active-lobby-list';
-    #fbListeners;
-    #lobbyListVersion = 0;  
+    #fbListeners; // Firebase event listeners, refrence stored for removal upon page removal
+    #lobbyListVersion = 0; // Prevents race condition
+
     /*****************************************************************
     * onDisplay();
     * Description:
     *   -> Runs Initalization Code on the page being displayed
-    *   -> Used to assign onclicks to buttons, and fill out the list of lobbies.
+    *   -> In this instance the following is done:
+    *       -> Event listeners are registered to the DB to build the server list and leaderboard
     * Params: N/A
     * Returns: N/A
     * Throws: N/A
     *****************************************************************/
     async onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        document.getElementById(HeartsLobbyBrowserPage.#CREATE_LOBBY_BUTTON_ID).onclick = async () => {
-            const LOBBY_SESSION = new LobbySession();
-            LOBBY_SESSION.createLobby(() => {
-                REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY]);
-            });
-        };
         this.#fbListeners = FBIO.registerListeners({
             [`lobbies`]: async () => {
                 this.buildServerList();
@@ -51,25 +46,43 @@ export default class HeartsLobbyBrowserPage extends Page {
         })
     }
 
-    onRemove(){
+    /*****************************************************************
+    * onRemove();
+    * Description:
+    *   -> Runs Code on the page being removed (not displayed)
+    *   -> In this instance the following is done:
+    *       -> DB listeners are unregistered.
+    * Params: N/A
+    * Returns: N/A
+    * Throws: N/A
+    *****************************************************************/
+    onRemove() {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#fbListeners);
     }
 
+    /*****************************************************************
+    * buildServerList();
+    * Description:
+    *   -> Reads the server list from DB
+    *   -> Removes All servers without players
+    *   -> Itterates through remaining servers, for each one:
+    *       -> Check if 
+    * Params: N/A
+    * Returns: N/A
+    * Throws: N/A
+    *****************************************************************/
     async buildServerList() {
         const VERSION = ++this.#lobbyListVersion;
-
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY_LIST = document.getElementById(HeartsLobbyBrowserPage.#ACTIVE_LOBBY_LIST_ID);
         while (LOBBY_LIST.lastChild) {
             LOBBY_LIST.lastChild.remove();
         }
         const SERVERS = await FBIO.read(`/lobbies`);
-
         if (VERSION !== this.#lobbyListVersion) return;
-
         if (SERVERS != null) {
             for (const [_serverId, _serverData] of Object.entries(SERVERS)) {
-                if (_serverData.players == null){
+                if (_serverData.players == null) {
                     await FBIO.remove(`lobbies/${_serverId}`)
                     continue;
                 }
@@ -77,9 +90,7 @@ export default class HeartsLobbyBrowserPage extends Page {
                 if (!FLAGS.lobbyOpen) continue;
                 const SERVER_HOST_UID = _serverData.players[0];
                 const HOST_DATA = await FBIO.read(`users/${SERVER_HOST_UID}/public`);
-
                 if (VERSION !== this.#lobbyListVersion) return;
-
                 const WRAPPER_DIV = this.createElement('div', { className: "server-entry" }, [
                     this.createElement('img', { src: HOST_DATA.pfp }),
                     this.createElement('p', { textContent: HOST_DATA.name }),
@@ -125,9 +136,9 @@ export default class HeartsLobbyBrowserPage extends Page {
     /*****************************************************************
     * getHTML();
     * Description:
-    *   -> Returns a string containing HTML tags
+    *   -> creates the html elements required for the page
     * Params: N/A
-    * Returns: String of HTML tags
+    * Returns: An html element
     * Throws: N/A
     *****************************************************************/
     getHTML() {
@@ -190,7 +201,13 @@ export default class HeartsLobbyBrowserPage extends Page {
                         this.createElement("button", {
                             id: HeartsLobbyBrowserPage.#CREATE_LOBBY_BUTTON_ID,
                             textContent: "[Create Lobby]",
-                        }),
+                            onclick: async () => {
+                                const LOBBY_SESSION = new LobbySession();
+                                LOBBY_SESSION.createLobby(() => {
+                                    REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY]);
+                                });
+                            }
+                        })
                     ]),
                 ]),
                 this.createElement("div", {

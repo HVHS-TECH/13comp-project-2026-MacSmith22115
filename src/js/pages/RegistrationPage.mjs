@@ -37,12 +37,9 @@ export default class RegistrationPage extends Page {
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
         REFERENCES[TERMINAL_INSTANCE].printStr(`Captured Info... [${AUTH.name.val}, ${AUTH.email.val}]`);
-        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register ${catagory} -${data}'");
-        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register confirm' To Continue...");
-
-        for (const [_field, _value] of Object.entries(REFERENCES[REGISTRATION_CACHE])) {
-            REFERENCES[TERMINAL_INSTANCE].printStr(`Gathered ${_field} from Google: ${_value.val}`);
-        }
+        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register ${data} -${input}' To enter data");
+        REFERENCES[TERMINAL_INSTANCE].printStr("EG 'register age -17' Will Register age as 17");
+        REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register confirm' To Finalize Registration...");
     }
 
     onRemove() {
@@ -53,9 +50,9 @@ export default class RegistrationPage extends Page {
     /*****************************************************************
     * getHTML();
     * Description:
-    *   -> Returns a string containing HTML tags
+    *   -> creates the html elements required for the page
     * Params: N/A
-    * Returns: String of HTML tags
+    * Returns: An html element
     * Throws: N/A
     *****************************************************************/
     getHTML() {

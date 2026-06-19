@@ -86,12 +86,18 @@ export async function registerConfirm() {
 
 async function validateData(_data) {
     const ERRORS = [];
-    let validName = Utils.validateInput(_data.name, ERRORS, Utils.NAME_VALIDATION_RULE);
-    let validEmail = Utils.validateInput(_data.email, ERRORS, Utils.EMAIL_VALIDATION_RULE);
-    let validPfp = Utils.validateInput(_data.pfp, ERRORS, Utils.PFP_VALIDATION_RULE);
-    let validAge = Utils.validateInput(_data.age, ERRORS, Utils.AGE_VALIDATION_RULE);
-    let validColour = Utils.validateInput(_data.colour, ERRORS, Utils.COLOUR_VALIDATION_RULE);
-    let validPhone = Utils.validateInput(_data.phone, ERRORS, Utils.PHONE_VALIDATION_RULE);
+    const NAME = _data.name ?? {};
+    const EMAIL = _data.email ?? {};
+    const PFP = _data.pfp ?? {};
+    const AGE = _data.age ?? {};
+    const COLOUR = _data.colour ?? {};
+    const PHONE = _data.phone ?? {};
+    let validName = Utils.validateInput(NAME.val, ERRORS, Utils.NAME_VALIDATION_RULE);
+    let validEmail = Utils.validateInput(EMAIL.val, ERRORS, Utils.EMAIL_VALIDATION_RULE);
+    let validPfp = Utils.validateInput(PFP.val, ERRORS, Utils.PFP_VALIDATION_RULE);
+    let validAge = Utils.validateInput(AGE.val, ERRORS, Utils.AGE_VALIDATION_RULE);
+    let validColour = Utils.validateInput(COLOUR.val, ERRORS, Utils.COLOUR_VALIDATION_RULE);
+    let validPhone = Utils.validateInput(PHONE.val, ERRORS, Utils.PHONE_VALIDATION_RULE);
     const OBJ = {
         valid: validName && validEmail && validPfp && validAge && validColour && validPhone,
         errors: ERRORS

@@ -11,9 +11,10 @@ export const HEARTS_GAME_PAGE_CLASS_KEY = 'hearts_game'; // Class Reference of '
 export const HEARTS_ROUND_OVER_PAGE_CLASS_KEY = 'hearts_round_over'; // Class Reference of 'HeartsRoundOverPage.mjs'
 export const HEARTS_MATCH_OVER_PAGE_CLASS_KEY = 'hearts_match_round_over'; // Class Reference of 'HeartsRoundOverPage.mjs'
 export const LOBBY_SESSION_INSTANCE_KEY = 'lobby_session_instance'; // Instance of 'GameSession.mjs'
-export const USER_IS_ADMIN_KEY = 'user_is_admin';
-export const TERMINAL_INSTANCE = 'terminal_instance';
+export const USER_IS_ADMIN_KEY = 'user_is_admin';   // Cache of wether the user is considered an admin
+export const TERMINAL_INSTANCE = 'terminal_instance';   // Instance of 'Terminal.mjs'
 export const REGISTRATION_CACHE = 'registration_cache'; // Cache saved when registering.
+
 // Object containing references to classes, instances and data.
 export const REFERENCES = {
     [PAGE_MANAGER_INSTANCE_KEY] : null,

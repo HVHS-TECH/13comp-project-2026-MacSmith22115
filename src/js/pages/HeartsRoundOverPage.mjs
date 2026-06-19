@@ -21,7 +21,7 @@ export default class HeartsRoundOverPage extends Page {
     #firebaseListeners;
 
 
-    onDisplay() {
+    async onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
@@ -31,6 +31,23 @@ export default class HeartsRoundOverPage extends Page {
         REFERENCES[TERMINAL_INSTANCE].printStr(`WORK IN PROGRESS`);
         REFERENCES[TERMINAL_INSTANCE].printStr(`Here Will Be Current Scores, Placings, etc`);
         REFERENCES[TERMINAL_INSTANCE].printStr(`New Round Starts When Any Player Hits Button Below...`);
+
+        await this.printRoundStats();
+        this.printElements();
+    }
+
+    async printRoundStats() {
+        const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const SCORES = await LOBBY.getPoints(true);
+        SCORES.forEach(_obj => {
+            const PLAYER = _obj.player;
+            const SCORE = _obj.score;
+            TERMINAL.printStr(`${PLAYER} : ${SCORE}`);
+        });
+    }
+
+    printElements() {
         REFERENCES[TERMINAL_INSTANCE].printElement(this.createElement("div", { id: "terminal-buttons-div" }));
         REFERENCES[TERMINAL_INSTANCE].printElement(
             this.createElement('button', {
@@ -48,7 +65,6 @@ export default class HeartsRoundOverPage extends Page {
                 REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_GAME_PAGE_CLASS_KEY]);
             }
         });
-
     }
 
     onRemove() {
@@ -62,10 +78,14 @@ export default class HeartsRoundOverPage extends Page {
         const CACHE = LOBBY.generateCache();
         const DECK = new Deck(...Card.TEMPLATES.map(_card => _card.id));
         const PLAYERS = (Object.values(LOBBY.getLobbyCache().players));
-        const HANDS = Deck.assignHands(DECK.deal(PLAYERS.length, true).hands, PLAYERS);
+        const HANDS = Deck.assignHands(DECK.deal(
+            PLAYERS.length,
+            true,
+            Utils.HEARTS_PRIORITY_REMOVAL_CARDS,
+            Utils.HEARTS_PROTECTED_CARDS
+        ).hands, PLAYERS);
         const LEADING_PLAYER = HeartsGamePage.find3Cubs(HANDS);
         const LEADING_PLAYER_INDEX = PLAYERS.indexOf(LEADING_PLAYER);
-
         FBIO.update(`lobbies/${LOBBY.getLobbyId()}`, {
             turn: LEADING_PLAYER,
             startIndex: LEADING_PLAYER_INDEX,

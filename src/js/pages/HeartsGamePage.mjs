@@ -12,9 +12,6 @@ import {
 import Utils from "../core/Utils.mjs";
 import Card from "../game/Card.mjs";
 import Terminal from "../core/Terminal.mjs";
-// Match -> The game session
-// Round -> The individual game, played untill all cards are used. 
-// Trick -> 1 'round' of cards played by each player
 
 export default class HeartsGamePage extends Page {
     static ID = 'hearts_game_page';
@@ -24,6 +21,7 @@ export default class HeartsGamePage extends Page {
     static #CLOSE_LOBBY_BUTTON_ID = 'close_lobby_button';
     static #SCORES_LIST_ID = 'scores_list;'
     #firebaseListeners;
+    #players = {};
 
     async playCard(_card) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
@@ -42,20 +40,18 @@ export default class HeartsGamePage extends Page {
             const CARD_TEMPLATE = Card.getTemplate(_card);
             if (!TRICK_DATA.playedCards) TRICK_DATA.playedCards = {};
             if (!TRICK_DATA.leadingSuit) TRICK_DATA.leadingSuit = CARD_TEMPLATE.suit;
-
             TRICK_DATA.playedCards[FBIO.authedUser().uid] = _card;
             await FBIO.update(`lobbies/${LOBBY_ID}`, {
                 trickData: TRICK_DATA
             })
-
             if (!FLAGS.heartsBroken) {
                 await FBIO.update(`lobbies/${LOBBY_ID}/flags`, {
                     heartsBroken: CARD_TEMPLATE.suit == 'hearts'
                 })
             }
+            await this.logAction(`${this.#players[USER_UID].name} Played ${_card}`);
             await this.markTurnOver();
         });
-
     }
 
     async markTurnOver() {
@@ -85,14 +81,13 @@ export default class HeartsGamePage extends Page {
         if (TRICK_DATA) {
             const PLAYED_CARDS_IDS = TRICK_DATA.playedCards;
             const LEADING_SUIT = TRICK_DATA.leadingSuit;
-
             const PLAYED_CARDS = [];
             for (const _card of Object.values(PLAYED_CARDS_IDS)) {
                 const TEMPLATE = Card.getTemplate(_card);
                 const CARD = Card.from(TEMPLATE);
                 PLAYED_CARDS.push(CARD);
             }
-
+            /*
             const SCORES = {}
             const SQ_SCORE = 13;
             for (const [_player, _cardId] of Object.entries(PLAYED_CARDS_IDS)) {
@@ -102,15 +97,16 @@ export default class HeartsGamePage extends Page {
                     if (CARD.getId() == 'sq') score = SQ_SCORE;
                     SCORES[_player] = score;
                 }
-            }
-
+            }*/
             const PLAYERS = Object.values(CACHE.players);
             const WINNING_CARD = this.compareCards(LEADING_SUIT, ...Object.values(PLAYED_CARDS));
             const WINNING_PLAYER = await Utils.getKeyByValue(PLAYED_CARDS_IDS, WINNING_CARD.getId());
+            const WINNING_PLAYER_NAME = this.#players[WINNING_PLAYER].name ?? "?";
             const WINNING_PLAYER_INDEX = PLAYERS.indexOf(WINNING_PLAYER);
-            this.scorePoints(LOBBY, FBIO, WINNING_PLAYER, WINNING_CARD, PLAYED_CARDS_IDS);
+            const GAINED_POINTS = await this.scorePoints(LOBBY, FBIO, WINNING_PLAYER, WINNING_CARD, PLAYED_CARDS_IDS);
             await FBIO.remove(`lobbies/${LOBBY.getLobbyId()}/trickData`);
-
+            await this.logAction(`${WINNING_PLAYER_NAME} Lost The Trick: Gained ${GAINED_POINTS} Points`);
+            await this.logAction(`It is Now ${WINNING_PLAYER_NAME}'s Turn...`);
             await FBIO.update(`/lobbies/${LOBBY_ID}`, {
                 startIndex: WINNING_PLAYER_INDEX,
                 turn: WINNING_PLAYER
@@ -148,35 +144,29 @@ export default class HeartsGamePage extends Page {
         })
     }
 
-    async onMatchOver() {
-        REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_MATCH_OVER_PAGE_CLASS_KEY]);
-    }
-
     shouldEndRound() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const HANDS = LOBBY.getLobbyCache().hands;
-        let endRound = false;
-        if (HANDS == null) {
-            endRound = true;
-        }
-        return endRound;
+        return HANDS == null;
     }
 
     async scorePoints(_lobby, _fbio, _winningPlayer, _winningCard, _playedCards) {
-        let points = (await _lobby.getPoints())[_winningPlayer] ?? 0;
+        let newPoints = 0;
+        let oldPoints = (await _lobby.getPoints())[_winningPlayer] ?? 0;
         for (const [_player, _cardId] of Object.entries(_playedCards)) {
             const CARD = Card.from(Card.getTemplate(_cardId));
             if (CARD.getSuit() == 'hearts' || CARD.getId() == 'sq') {
                 if (CARD.getId() == 'sq') {
-                    points += 13;
+                    newPoints += 13;
                 } else {
-                    points += 1;
+                    newPoints += 1;
                 }
             }
         }
         await _fbio.update(`lobbies/${_lobby.getLobbyId()}/points`, {
-            [_winningPlayer]: points
+            [_winningPlayer]: (oldPoints + newPoints)
         });
+        return newPoints;
     }
 
     compareCards(_leadingSuit, ..._cards) {
@@ -195,9 +185,9 @@ export default class HeartsGamePage extends Page {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const MY_TURN = LOBBY.isMyTurn();
         this.displayHand(MY_TURN);
+        document.getElementById('turn-indicator-text').textContent = (`${MY_TURN ? "" : "Not"} Your Turn`).trim();
         this.updateTurnIndicator();
     }
-
 
     async updateTurnIndicator() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -206,18 +196,17 @@ export default class HeartsGamePage extends Page {
         const TURN = CACHE.turn;
         const CURRENT_INDEX = PLAYERS_LIST.indexOf(TURN);
         const START_INDEX = CACHE.startIndex;
-
-        for (let i = 0; i < 4; i++){
+        for (let i = 0; i < 4; i++) {
             const ELEMENT = document.getElementById(`player-${i}-turn-slot`);
+            if (ELEMENT == null) continue;
             ELEMENT.classList.remove('current-slot', 'start-slot');
-
-            if (i == CURRENT_INDEX){
+            if (i == CURRENT_INDEX) {
                 ELEMENT.classList.add('current-slot');
                 ELEMENT.classList.remove('normal-slot');
-            } else if (i == START_INDEX){
+            } else if (i == START_INDEX) {
                 ELEMENT.classList.add('start-slot');
                 ELEMENT.classList.remove('normal-slot');
-            } else { 
+            } else {
                 ELEMENT.classList.add('normal-slot');
             }
         }
@@ -237,10 +226,9 @@ export default class HeartsGamePage extends Page {
         while (LIST_ELEMENT.firstChild) {
             LIST_ELEMENT.firstChild.remove();
         }
-
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const HAND = Object.values(LOBBY.getLobbyCache().hands[FBIO.authedUser().uid]);
+        const HAND = Object.values(LOBBY.getLobbyCache().hands[FBIO.authedUser().uid] ?? {});
         const TRICK_DATA = await LOBBY.getTrickData();
         const LEADING_SUIT = TRICK_DATA.leadingSuit;
         const HAND_INCLUDES_C3 = HAND.includes('c3');
@@ -263,12 +251,12 @@ export default class HeartsGamePage extends Page {
         });
     }
 
-    hasOneSuit(_hand, _suit){
+    hasOneSuit(_hand, _suit) {
         let val = true;
         _hand.forEach(_card => {
             if (!val) return;
             const CARD = Card.getTemplate(_card);
-            if (CARD.suit != _suit){
+            if (CARD.suit != _suit) {
                 val = false;
                 return;
             }
@@ -289,21 +277,14 @@ export default class HeartsGamePage extends Page {
                         return true;
                     }
                 } else {
-                    if (_onlyHearts){
+                    if (_onlyHearts) {
                         return true;
                     }
-                    if (_heartsBroken){
+                    if (_heartsBroken) {
                         return true;
                     } else {
                         return _suit != 'hearts';
                     }
-                    /*
-                    if (!_heartsBroken && _onlyHearts){
-                        return true;
-                    } else {
-                        return _suit != 'hearts';
-                    }*/
-                    // Hearts broken || not only hearts
                 }
             }
         } else {
@@ -311,58 +292,56 @@ export default class HeartsGamePage extends Page {
         }
     }
 
-    displayPlayedCards() {
+    async preDisplay() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const CACHE = LOBBY.getLobbyCache();
-        const PLAYER_LIST = Object.values(CACHE.players);
-        const TRICK_DATA = CACHE.trickData ?? {};
-        const PLAYED_CARDS = TRICK_DATA.playedCards ?? {};
-        document.querySelectorAll('.hearts-played-card').forEach(_element => _element.remove());
-        for (let i = 0; i < 4; i++) {
-            const SLOT_ELEMENT = document.getElementById(`player-${i}-turn-slot`);
-            if (SLOT_ELEMENT == null || SLOT_ELEMENT == undefined) continue;
-            const PLAYER = PLAYER_LIST[i];
-            if (PLAYER == null || PLAYER == undefined) continue;
-            const CARD = PLAYED_CARDS[PLAYER];
-            if (CARD == null || CARD == undefined) continue; 
-            const SCORE_ELEMENT = this.createElement('p', {
-                textContent: CARD,
-                className: 'hearts-played-card'
-            })
-            SLOT_ELEMENT.appendChild(SCORE_ELEMENT);
+        await LOBBY.generateCache();
+        const PLAYERS = Object.values(LOBBY.getLobbyCache().players);
+
+        for (let i = 0; i < PLAYERS.length; i++) {
+            const PLAYER = PLAYERS[i];
+            const PUBLIC_RECORDS = await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read(`users/${PLAYER}/public`);
+            this.#players[PLAYER] = PUBLIC_RECORDS;
         }
     }
-
-    onDisconnect() {
-        REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
-        REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = null;
-    }
-
-    async onPlayerLeave(){
-
-    }
-
 
     onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const PLAYERS = Object.values(LOBBY.getLobbyCache().players);
+        for (let i = 0; i < 4; i++) {
+            const MAX_PLAYER_INDEX = PLAYERS.length - 1;
+            const ELEMENT = document.getElementById(`player-${i}-turn-slot`);
+            if (i > MAX_PLAYER_INDEX) {
+                ELEMENT.remove()
+                continue;
+            };
+            const PLAYER = this.#players[PLAYERS[i]];
+            const NAME_ELEMENT = this.createElement('p', { 
+                textContent: PLAYER.name, 
+                className: 'player-slot-name' 
+            })
+            
+            ELEMENT.appendChild(NAME_ELEMENT);
+        }
+
         this.#firebaseListeners = FBIO.registerListeners({
             [`lobbies/${LOBBY.getLobbyId()}`]: async (_data) => {
                 if (_data != null) return;
-                this.onDisconnect();
+                REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
+                REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = null;
             },
             [`lobbies/${LOBBY.getLobbyId()}/players`]: async (_data) => {
                 if (_data == null || _data == undefined) return;
                 const SELF_UID = FBIO.authedUser().uid;
                 const OLD_CACHE = LOBBY.getLobbyCache();
                 const OLD_PLAYERS_LIST = Object.values(OLD_CACHE.players);
-                const OLD_LENGTH = OLD_PLAYERS_LIST.length;                
+                const OLD_LENGTH = OLD_PLAYERS_LIST.length;
                 await LOBBY.generateCache();
                 const NEW_CACHE = LOBBY.getLobbyCache();
                 const NEW_PLAYERS_LIST = Object.values(NEW_CACHE.players)
                 const NEW_LENGTH = NEW_PLAYERS_LIST.length;
                 if (!NEW_PLAYERS_LIST.indexOf(SELF_UID) == 0) return;
-                if (NEW_LENGTH < OLD_LENGTH){
+                if (NEW_LENGTH < OLD_LENGTH) {
                     LOBBY.closeLobby();
                 }
             },
@@ -373,12 +352,11 @@ export default class HeartsGamePage extends Page {
             },
             [`lobbies/${LOBBY.getLobbyId()}/trickData/playedCards`]: async (_data) => {
                 await LOBBY.generateCache();
-                this.displayPlayedCards();
             },
             [`lobbies/${LOBBY.getLobbyId()}/flags/roundOver`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null || !_data) return;
-                this.onRoundOver();
+                REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_ROUND_OVER_PAGE_CLASS_KEY]);
             },
             [`lobbies/${LOBBY.getLobbyId()}/points`]: async (_data) => {
                 await LOBBY.generateCache();
@@ -388,29 +366,35 @@ export default class HeartsGamePage extends Page {
             [`lobbies/${LOBBY.getLobbyId()}/flags/matchOver`]: async (_data) => {
                 await LOBBY.generateCache();
                 if (_data == null || _data == false) return;
-                this.onMatchOver();
+                REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_MATCH_OVER_PAGE_CLASS_KEY]);
             },
-            [`lobbies/${LOBBY.getLobbyId()}/trickData/leadingSuit`] : async (_data) => {
+            [`lobbies/${LOBBY.getLobbyId()}/trickData/leadingSuit`]: async (_data) => {
                 await LOBBY.generateCache();
                 this.displayGameStats();
+            },
+            [`lobbies/${LOBBY.getLobbyId()}/logs`]: async (_data) => {
+                await LOBBY.generateCache();
+                this.buildLogs(_data);
             }
         });
+
+
     }
 
-    async displayGameStats(){
+    async displayGameStats() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const CACHE = LOBBY.getLobbyCache();
         const TRICK_DATA = await LOBBY.getTrickData();
         let leading = TRICK_DATA.leadingSuit;
         if (leading == null || leading == undefined) leading = 'None';
-        const PARENT_ELEMENT = document.getElementById('round-stats');
+        /*const PARENT_ELEMENT = document.getElementById('round-stats');
         document.querySelectorAll('.leading-suit-stat').forEach(_element => _element.remove());
         const CHILD_ELEMENT = this.createElement('p', {
             textContent: `Leading Suit: ${leading}`,
             className: 'leading-suit-stat'
         });
-        PARENT_ELEMENT.appendChild(CHILD_ELEMENT);
-        
+        PARENT_ELEMENT.appendChild(CHILD_ELEMENT);*/
+
     }
 
     async displayScores() {
@@ -421,7 +405,7 @@ export default class HeartsGamePage extends Page {
         const SCORES = await LOBBY.getPoints(true);
 
         document.querySelectorAll('.hearts-score').forEach(_element => _element.remove());
-        for (let i = 0; i < 4; i++){
+        for (let i = 0; i < 4; i++) {
             const SLOT_ELEMENT = document.getElementById(`player-${i}-turn-slot`);
             if (SLOT_ELEMENT == null || SLOT_ELEMENT == undefined) continue;
             const PLAYER = PLAYER_LIST[i];
@@ -432,34 +416,19 @@ export default class HeartsGamePage extends Page {
             if (SCORE == null || SCORE == undefined) continue;
 
             const SCORE_ELEMENT = this.createElement('p', {
-                textContent: SCORE,
+                textContent: `${SCORE} Points` ,
                 className: 'hearts-score'
             })
             SLOT_ELEMENT.appendChild(SCORE_ELEMENT);
         }
     }
 
-
-    onRoundOver() {
-        REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_ROUND_OVER_PAGE_CLASS_KEY]);
-    }
-
-    // Points == bad...
-    // Therefor rank people from < to > points. 
-    // Give each position a set number of points
-    // Perhaps max points equals num of players minus 1, then decrement to last place (0 score)?
     async writeRoundOver() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        //const POINTS = LOBBY.getPoints();
         FBIO.update(`/lobbies/${LOBBY.getLobbyId()}/flags`, {
             gameStarted: false
         });
-        //LOBBY.closeLobby();
-    }
-
-    async writeGlobalPoints() {
-
     }
 
     onRemove() {
@@ -475,6 +444,39 @@ export default class HeartsGamePage extends Page {
             }
         }
         return returnVal;
+    }
+
+    buildLogs(_data){
+        const PARENT_ELEMENT = document.getElementById('action-log-output');
+        while (PARENT_ELEMENT.lastChild){
+            PARENT_ELEMENT.lastChild.remove();
+        }
+        Object.values(_data ?? {}).forEach(_log => {
+            const LOG_ELEMENT = this.createElement('p', {
+                className: 'action-log-entry',
+                textContent: `> ${_log}`
+            })
+            PARENT_ELEMENT.appendChild(LOG_ELEMENT);
+        })
+    }
+
+    async logAction(_str){
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        const LOBBY_ID = LOBBY.getLobbyId();
+        const PLAYER_COUNT = (LOBBY.getLobbyCache().players ?? []).length;
+        const MIN_LOGS = 4;
+        const ALLOWED_LOGS = Math.max(PLAYER_COUNT + 1, MIN_LOGS);
+        const LOGS = Object.values(await FBIO.read(`lobbies/${LOBBY_ID}/logs`) ?? {});
+        LOGS.push(_str);
+
+        while (LOGS.length > ALLOWED_LOGS) {
+            LOGS.shift();
+        }
+
+        await FBIO.update(`lobbies/${LOBBY_ID}`, {
+            logs: LOGS
+        });
     }
 
     getHTML() {
@@ -523,38 +525,69 @@ export default class HeartsGamePage extends Page {
                                 this.createElement('div', {
                                     className: 'player-slot',
                                     id: 'player-0-turn-slot'
-                                }),
+                                }, [
+                                    this.createElement('div', {
+                                        className: 'player-slot-bar'
+                                    })
+                                ]),
                                 this.createElement('div', {
                                     className: 'player-slot',
                                     id: 'player-1-turn-slot'
-                                }),
+                                }, [
+                                    this.createElement('div', {
+                                        className: 'player-slot-bar'
+                                    })
+                                ]),
                                 this.createElement('div', {
                                     className: 'player-slot',
                                     id: 'player-2-turn-slot'
-                                }),
+                                }, [
+                                    this.createElement('div', {
+                                        className: 'player-slot-bar'
+                                    })
+                                ]),
                                 this.createElement('div', {
                                     className: 'player-slot',
                                     id: 'player-3-turn-slot'
-                                }),
+                                }, [
+                                    this.createElement('div', {
+                                        className: 'player-slot-bar'
+                                    })
+                                ]),
                             ])
                         ]),
                         this.createElement('div', { className: 'cent' }, [
-                            this.createElement('div', { className: 'turn-timer' }),
-                            this.createElement('div', { className: 'card-slot' })
+                            this.createElement('div', { className: 'turn-indicator-container' }, [
+                                this.createElement('h1', { id: 'turn-indicator-text' })
+                            ]),
+                            this.createElement('div', {
+                                id: "action-log-output"
+                            })
                         ]),
                         this.createElement('div', { className: 'rhs' }, [
+                            this.createElement('div', { className: "chat-container" }, [
+                                this.createElement('h1', { className: "chat-title", textContent: "Instructions" }),
+                                this.createElement('div', { className: "chat-content" })
+                            ]),
+                            /*
                             this.createElement('div', { className: 'rhs-widgets' }, [
                                 this.createElement('div', { className: 'notepad' }),
-                                this.createElement('div', { 
-                                    className: 'round-stats', 
+                                this.createElement('div', {
+                                    className: 'round-stats',
                                     id: 'round-stats'
-                                 })
-                            ])
+                                })
+                            ])*/
                         ])
                     ]),
                     this.createElement('div', { className: 'bottom-row' }, [
                         this.createElement('div', { className: 'lhs' }, [
-                            this.createElement('div', { className: 'card-icon' }, [])
+                            this.createElement("div", {
+                                className: 'notepad-container'
+                            }, [
+                                this.createElement('h4', { className: 'notepad-title', textContent: "Notepad" }),
+                                this.createElement('div', { id: "notepad-output" }),
+                                this.createElement('input', { className: "notepad-input" })
+                            ]),
                         ]),
                         this.createElement('div', { className: 'rhs' }, [
                             this.createElement('div', { id: 'card-grid' }, [
@@ -575,35 +608,6 @@ export default class HeartsGamePage extends Page {
                     ])
                 ]),
             ]),
-            /*
-            this.createElement('div', {}, [
-                this.createElement('h1', {
-                    id: HeartsGamePage.#TURN_TITLE
-                }),
-                this.createElement('ul', {
-                    id: HeartsGamePage.#HAND_LIST_ID
-                }),
-                this.createElement('h1', {
-                    textContent: 'Played Cards...'
-                }),
-                this.createElement('ul', {
-                    id: HeartsGamePage.#PLAYED_CARDS_LIST_ID
-                }),
-                this.createElement('h1', {
-                    textContent: 'Points:'
-                }),
-                this.createElement('ul', {
-                    id: HeartsGamePage.#SCORES_LIST_ID
-                }),
-                this.createElement('button', {
-                    id: HeartsGamePage.#CLOSE_LOBBY_BUTTON_ID,
-                    textContent: "Exit Lobby",
-                    onclick: async () => {
-                        await REFERENCES[LOBBY_SESSION_INSTANCE_KEY].closeLobby();
-                    }
-                })
-            ])
-                */
         ])
     }
 
