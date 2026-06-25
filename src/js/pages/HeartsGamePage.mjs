@@ -129,7 +129,8 @@ export default class HeartsGamePage extends Page {
         const POINTS = await LOBBY.getPoints();
         let shouldEnd = false;
         for (const [_uid, _score] of Object.entries(POINTS)) {
-            if (!shouldEnd && _score >= 100) {
+            //if (!shouldEnd && _score >= 100) {
+            if (!shouldEnd && _score >= 1) {
                 shouldEnd = true;
             }
         }
@@ -228,7 +229,9 @@ export default class HeartsGamePage extends Page {
         }
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-        const HAND = Object.values(LOBBY.getLobbyCache().hands[FBIO.authedUser().uid] ?? {});
+
+        const CACHE = LOBBY.getLobbyCache().hands ?? {};
+        const HAND = Object.values(CACHE[FBIO.authedUser().uid] ?? {});
         const TRICK_DATA = await LOBBY.getTrickData();
         const LEADING_SUIT = TRICK_DATA.leadingSuit;
         const HAND_INCLUDES_C3 = HAND.includes('c3');
@@ -304,6 +307,15 @@ export default class HeartsGamePage extends Page {
         }
     }
 
+    addToNotepad(_str){
+        const OUTPUT_ELEMENT = document.getElementById("notepad-output");
+        const NEW_LINE_ELEMENT = this.createElement('p', {
+            className: 'notepad-line',
+            textContent: _str
+        });
+        OUTPUT_ELEMENT.appendChild(NEW_LINE_ELEMENT)
+    }
+
     onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -323,6 +335,12 @@ export default class HeartsGamePage extends Page {
             
             ELEMENT.appendChild(NAME_ELEMENT);
         }
+        document.getElementById("notepad-input").addEventListener('keyup', (_event) => {
+            if (_event.key === 'Enter'){
+                this.addToNotepad(document.getElementById("notepad-input").value);
+                document.getElementById("notepad-input").value = '';
+            }
+        });
 
         this.#firebaseListeners = FBIO.registerListeners({
             [`lobbies/${LOBBY.getLobbyId()}`]: async (_data) => {
@@ -569,14 +587,6 @@ export default class HeartsGamePage extends Page {
                                 this.createElement('h1', { className: "chat-title", textContent: "Instructions" }),
                                 this.createElement('div', { className: "chat-content" })
                             ]),
-                            /*
-                            this.createElement('div', { className: 'rhs-widgets' }, [
-                                this.createElement('div', { className: 'notepad' }),
-                                this.createElement('div', {
-                                    className: 'round-stats',
-                                    id: 'round-stats'
-                                })
-                            ])*/
                         ])
                     ]),
                     this.createElement('div', { className: 'bottom-row' }, [
@@ -585,8 +595,10 @@ export default class HeartsGamePage extends Page {
                                 className: 'notepad-container'
                             }, [
                                 this.createElement('h4', { className: 'notepad-title', textContent: "Notepad" }),
-                                this.createElement('div', { id: "notepad-output" }),
-                                this.createElement('input', { className: "notepad-input" })
+                                this.createElement('div', { id: "notepad-output", id:"notepad-output"}),
+                                this.createElement('span', {textContent: "> "}, [
+                                    this.createElement('input', { className: "notepad-input", id: "notepad-input" })
+                                ])
                             ]),
                         ]),
                         this.createElement('div', { className: 'rhs' }, [

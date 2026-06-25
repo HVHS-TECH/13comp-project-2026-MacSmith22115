@@ -7,7 +7,9 @@ import {
     HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY,
     PROFILE_PAGE_CLASS_KEY,
     TERMINAL_INSTANCE,
-    ADMIN_PAGE_CLASS_KEY
+    ADMIN_PAGE_CLASS_KEY,
+    GUESS_NUMBER_PAGE_CLASS_KEY,
+    LOGIN_PAGE_CLASS_KEY
 } from '../core/ReferenceStorage.mjs';
 import Terminal from '../core/Terminal.mjs';
 
@@ -67,6 +69,15 @@ export default class HomePage extends Page {
                 textContent: "[Play Hearts]",
                 onclick: () => {
                     REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY])
+                }
+            }), 'terminal-buttons-div');
+
+
+        TERMINAL.printElement(
+            this.createElement("button", {
+                textContent: "[Play Number Guess]",
+                onclick: () => {
+                    REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[GUESS_NUMBER_PAGE_CLASS_KEY])
                 }
             }), 'terminal-buttons-div');
 
@@ -134,7 +145,13 @@ export default class HomePage extends Page {
                     }, [
                         this.createElement("button", {
                             textContent: "X",
-                            className: "terminal-logout-button"
+                            className: "terminal-logout-button",
+                            onclick: () => {
+                                REFERENCES[FIREBASE_IO_INSTANCE_KEY].logout(() => {
+                                    const PAGE_CLASS = REFERENCES[LOGIN_PAGE_CLASS_KEY];
+                                    REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(PAGE_CLASS);
+                                })
+                            }
                         }),
                     ])
                 ]),

@@ -1,5 +1,5 @@
 // imports
-import { PAGE_MANAGER_INSTANCE_KEY, REFERENCES, TERMINAL_INSTANCE } from "./ReferenceStorage.mjs";
+import { LOGIN_PAGE_CLASS_KEY, PAGE_MANAGER_INSTANCE_KEY, REFERENCES, TERMINAL_INSTANCE } from "./ReferenceStorage.mjs";
 import Utils from "./Utils.mjs";
 
 /*****************************************************************
@@ -13,7 +13,8 @@ export default class Terminal {
     #outputElement; // HTML element to append outputs to
     #inputElement;  // HTML element to read inputs from
     keydownListener = null; // Event listener, stored to unregister later.
-
+    #cmdHistory = [];
+    #cmdHistoryIndex = -1;
     static TERMINAL_INPUT_ELEMENT_ID = 'terminal_import';
     static TERMINAL_OUTPUT_ELEMENT_ID = 'terminal_output';
 
@@ -34,12 +35,31 @@ export default class Terminal {
     *****************************************************************/
     registerKeydownListener() {
         this.keydownListener = (_event) => {
-            if (_event.key !== 'Enter') return;
-            const ELEMENT = REFERENCES[TERMINAL_INSTANCE].getInputElement();
-            if (ELEMENT.value == '') return;
-            REFERENCES[TERMINAL_INSTANCE].readInput();
+            const KEY = _event.key;
+            if (KEY !== 'Enter' && KEY !== 'ArrowUp' && KEY !== 'ArrowDown') return;
+            const ELEMENT = this.getInputElement();
+            switch (KEY) {
+                case 'Enter':
+                    if (ELEMENT.value == '') return;
+                    this.readInput();
+                    break;
+                default:
+                    this.scrollCmdHistory(KEY === 'ArrowUp' ? true : false);
+                    break;
+            }
         }
         document.addEventListener('keydown', this.keydownListener);
+    }
+
+    scrollCmdHistory(_scrollUp){
+        const CURRENT_INDEX = this.#cmdHistoryIndex;
+        const HISTORY = this.#cmdHistory;
+        const DIR_VAL = _scrollUp ? 1 : -1;
+        if (HISTORY[this.#cmdHistoryIndex + DIR_VAL] == null) return;
+        this.#cmdHistoryIndex += DIR_VAL;
+        this.getInputElement().value = HISTORY[this.#cmdHistoryIndex];
+        console.log(HISTORY);
+        console.log(`INDEX: ${this.#cmdHistoryIndex}`);
     }
 
     /*****************************************************************
@@ -102,7 +122,7 @@ export default class Terminal {
         const ELEMENT = document.createElement('p');
         ELEMENT.innerHTML = _string;
         this.#outputElement.appendChild(ELEMENT);
-        document.getElementById('terminal-content').scrollTo({
+        document.getElementById('terminal-content')?.scrollTo({
             top: document.body.scrollHeight,
             behavior: 'smooth'
         })
@@ -119,6 +139,7 @@ export default class Terminal {
         const INPUT = this.#inputElement.value;
         this.#inputElement.value = '';
         this.logCmd(INPUT);
+        this.#cmdHistory.push(INPUT);
         this.executeCmd(INPUT.trim());
     }
 
@@ -163,10 +184,20 @@ export default class Terminal {
             this.printStr(`Syntax Error: Command '${SPLIT_INPUT[0]}' Not Found`);
             return;
         }
-        if (!COMMAND_JSON.pages.includes(REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().getId())) {
-            this.printStr(`Location Error: Command '${SPLIT_INPUT[0]}' Can't Be User Here`);
-            return;
+        const CURRENT_PAGE_ID = REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().getId()
+        if (!COMMAND_JSON.pages == null) {
+            if (!COMMAND_JSON.pages.includes(CURRENT_PAGE_ID)) {
+                this.printStr(`Location Error: Command '${SPLIT_INPUT[0]}' Can't Be User Here`);
+                return;
+            }
+        } else if (CURRENT_PAGE_ID === REFERENCES[LOGIN_PAGE_CLASS_KEY].ID) {
+            if (SPLIT_INPUT[0] != 'login') {
+                this.printStr("All Commands Other Than 'login google' Are Blocked Before Login");
+                return;
+            }
         }
+
+
         const COMMAND = this.computeCommand(SPLIT_INPUT, COMMAND_JSON.args);
         const FUNC = COMMAND.func;
         const USER_ARGS = COMMAND.captured;

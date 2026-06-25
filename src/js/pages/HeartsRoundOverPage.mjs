@@ -19,7 +19,19 @@ export default class HeartsRoundOverPage extends Page {
     static #TITLE_ID = 'main-title';
     static #NEW_ROUND_BUTTON_ID = 'new-round-button';
     #firebaseListeners;
+    #players = {};
 
+    async preDisplay() {
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        await LOBBY.generateCache();
+        const PLAYERS = Object.values(LOBBY.getLobbyCache().players);
+
+        for (let i = 0; i < PLAYERS.length; i++) {
+            const PLAYER = PLAYERS[i];
+            const PUBLIC_RECORDS = await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read(`users/${PLAYER}/public`);
+            this.#players[PLAYER] = PUBLIC_RECORDS;
+        }
+    }
 
     async onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
@@ -28,11 +40,9 @@ export default class HeartsRoundOverPage extends Page {
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
         REFERENCES[TERMINAL_INSTANCE].printStr("Round Over!");
-        REFERENCES[TERMINAL_INSTANCE].printStr(`WORK IN PROGRESS`);
-        REFERENCES[TERMINAL_INSTANCE].printStr(`Here Will Be Current Scores, Placings, etc`);
-        REFERENCES[TERMINAL_INSTANCE].printStr(`New Round Starts When Any Player Hits Button Below...`);
-
+        REFERENCES[TERMINAL_INSTANCE].printStr(`Current Placings & Points:`);
         await this.printRoundStats();
+        REFERENCES[TERMINAL_INSTANCE].printStr(`New Round Starts When Any Player Hits Button Below...`);
         this.printElements();
     }
 
@@ -40,15 +50,20 @@ export default class HeartsRoundOverPage extends Page {
         const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const SCORES = await LOBBY.getPoints(true);
-        SCORES.forEach(_obj => {
-            const PLAYER = _obj.player;
-            const SCORE = _obj.score;
-            TERMINAL.printStr(`${PLAYER} : ${SCORE}`);
-        });
+        for (let placing = 0; placing < (SCORES.length); placing++){
+            
+            const PLAYER_TO_SCORE_OBJ = SCORES[placing];
+            const SCORE = PLAYER_TO_SCORE_OBJ.score;
+            const PLAYER_UID = PLAYER_TO_SCORE_OBJ.player;
+            const PLAYER_NAME = this.#players[PLAYER_UID].name;
+            TERMINAL.printStr(`#${placing + 1}: ${PLAYER_NAME} @ ${SCORE} Points`);
+        }
     }
 
     printElements() {
         REFERENCES[TERMINAL_INSTANCE].printElement(this.createElement("div", { id: "terminal-buttons-div" }));
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         REFERENCES[TERMINAL_INSTANCE].printElement(
             this.createElement('button', {
                 id: HeartsRoundOverPage.#NEW_ROUND_BUTTON_ID,

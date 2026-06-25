@@ -54,7 +54,6 @@ export default class Page {
         this.onRemove();
         this.#element.remove();
     }
-
     
     /*****************************************************************
     * Abstract Methods

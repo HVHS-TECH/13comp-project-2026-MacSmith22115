@@ -29,6 +29,27 @@ export default class HeartsLobbyPage extends Page {
     static #PLAYERS_LIST_ID = 'players_list';
     static #START_GAME_BUTTON_ID = 'start_game_button';
     #firebaseListeners;
+    #players = {};
+
+    async preDisplay() {
+        const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
+        await LOBBY.generateCache();
+        const PLAYERS = Object.values(LOBBY.getLobbyCache().players);
+
+        for (let i = 0; i < PLAYERS.length; i++) {
+            const PLAYER = PLAYERS[i];
+            const PUBLIC_RECORDS = await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read(`users/${PLAYER}/public`);
+            this.#players[PLAYER] = PUBLIC_RECORDS;
+        }
+    }
+
+    
+    async readPlayersDetails() {
+        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
+        const PLAYERS = [];
+        Object.values(this.#players ?? {}).forEach(_player => PLAYERS.push(_player));
+        return PLAYERS;
+    }
 
     writeGameLobby() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -36,9 +57,9 @@ export default class HeartsLobbyPage extends Page {
         const DECK = new Deck(...Card.TEMPLATES.map(_card => _card.id));
         const PLAYERS = (Object.values(LOBBY.getLobbyCache().players));
         const HANDS = Deck.assignHands(DECK.deal(
-            PLAYERS.length, 
-            true, 
-            Utils.HEARTS_PRIORITY_REMOVAL_CARDS, 
+            PLAYERS.length,
+            true,
+            Utils.HEARTS_PRIORITY_REMOVAL_CARDS,
             Utils.HEARTS_PROTECTED_CARDS
         ).hands, PLAYERS);
         const LEADING_PLAYER = HeartsGamePage.find3Cubs(HANDS);
@@ -140,16 +161,6 @@ export default class HeartsLobbyPage extends Page {
         }
     }
 
-    async readPlayersDetails(_playerIds) {
-        const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
-        const PLAYERS = [];
-
-        for (let i = 0; i < _playerIds.length; i++) {
-            const RECORD = await FBIO.read(`users/${_playerIds[i]}/public`);
-            PLAYERS.push(RECORD);
-        }
-        return PLAYERS;
-    }
 
     async markPlayersReady(_data) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
@@ -182,7 +193,7 @@ export default class HeartsLobbyPage extends Page {
 
         if (READ_RESULT == null) return;
 
-        const PLAYERS = await this.readPlayersDetails(Object.values(READ_RESULT.players));
+        const PLAYERS = await this.readPlayersDetails();
         for (let i = 0; i < 4; i++) {
             const SLOT = document.getElementById(`player-${i}-slot`);
 

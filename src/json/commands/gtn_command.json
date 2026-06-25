@@ -1,0 +1,15 @@
+{
+    "pages": ["guess_number_page"],
+    "args": {
+        "gtn": {
+            "guess": {
+                "-": {
+                    "*": "handleGuess"
+                }
+            },
+            "replay": {
+                "*": "replayGame"
+            }
+        }
+    }
+}

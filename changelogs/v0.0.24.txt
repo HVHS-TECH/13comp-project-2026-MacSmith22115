@@ -1,12 +1,12 @@
-v0.0.23
+v0.0.24
 
 Log:
- - LOTS of commenting
- - UI polish and touchups to hearts game page.
+ - More UI Polish
+ - Added Guess the Number game
+ - Added 'nav' command for page navigation
+ - Added CMD history
 
 TODO NEXT:
-    -> Abstract out the html elements for terminal stuff into terminal class for easier reuse.
-    -> Specify cards to remove when dealing equal sized hands
     -> Comment code
     -> Clean/Remove Card Code?
     -> Need some sort of way to log error when cmd is partially wrong... eg 'register namg -mac'

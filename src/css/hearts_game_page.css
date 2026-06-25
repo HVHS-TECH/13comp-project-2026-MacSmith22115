@@ -97,8 +97,23 @@
 
 }
 
+.notepad-line {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-size: 15px;
+    margin-left: 3%;
+    color:#888
+}
+
+#notepad-input {
+    border:none;
+    background: black;
+    color: #888
+}
+
 #turn-indicator-text {
     text-align: center;
+    font-family: Consolas, "Segoe UI", sans-serif;
     border-bottom: 3px solid #888;
     border-top:3px solid #888;
     border-left: 3px dashed #888;
@@ -109,6 +124,7 @@
 
 .player-slot-name {
     font-size: 15px;
+    font-family: Consolas, "Segoe UI", sans-serif;
     margin-left: 25%;
     width: 50%;
     text-align: center;
@@ -119,6 +135,7 @@
     width: 50%;
     text-align: center;
     font-size: 15px;
+    font-family: Consolas, "Segoe UI", sans-serif;
 }
 
 .hearts-played-card {
@@ -126,6 +143,7 @@
     width: 50%;
     text-align: center;
     font-size: 15px;
+    font-family: Consolas, "Segoe UI", sans-serif;
 }
 
 #hearts_game_page .start-slot {
@@ -179,7 +197,8 @@
     margin-top: 2%;
     margin-bottom: 2%;
     font-size: 25px;
-    text-decoration: underline;
+    color:#888;
+    font-family: Consolas, "Segoe UI", sans-serif;
 }
 
 .notepad-input {
@@ -223,6 +242,20 @@
     border-left: 3px dashed #888;
 }
 
+.chat-title {
+        font-family: Consolas, "Segoe UI", sans-serif;
+}
+
+.notepad-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    max-height: 174px;
+    overflow-y: auto;
+    scrollbar-color: #888 black;
+    scrollbar-width: thin;
+}
+
 #card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, 50px);
@@ -234,6 +267,8 @@
 
     max-height: 200px;
     overflow-y: auto;
+    scrollbar-color: #888 black;
+    scrollbar-width: thin;
 }
 
 #hearts_game_page .card {

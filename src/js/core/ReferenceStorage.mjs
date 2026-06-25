@@ -4,12 +4,13 @@ export const LOGIN_PAGE_CLASS_KEY = 'login_page_class'; // Class Reference of 'L
 export const HOME_PAGE_CLASS_KEY = 'home_page_class'; // Class Reference of 'HomePage.mjs'
 export const PROFILE_PAGE_CLASS_KEY = 'profile_page_class'; // Class Reference of 'ProfilePage.mjs'
 export const ADMIN_PAGE_CLASS_KEY = 'admin_page_class'; // Class Reference of 'AdminPage.mjs'
-export const REGISTRATION_PAGE_CLASS_KEY = 'registration_page'; // Class Reference of 'RegistrationPage.mjs'
-export const HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY = 'hearts_lobby_browser'; // Class Reference of 'HeartsLobbyBrowserPage.mjs'
-export const HEARTS_LOBBY_PAGE_CLASS_KEY = 'hearts_lobby'; // Class Reference of 'HeartsLobbyPage.mjs'
-export const HEARTS_GAME_PAGE_CLASS_KEY = 'hearts_game'; // Class Reference of 'HeartsGamePage.mjs'
-export const HEARTS_ROUND_OVER_PAGE_CLASS_KEY = 'hearts_round_over'; // Class Reference of 'HeartsRoundOverPage.mjs'
-export const HEARTS_MATCH_OVER_PAGE_CLASS_KEY = 'hearts_match_round_over'; // Class Reference of 'HeartsRoundOverPage.mjs'
+export const REGISTRATION_PAGE_CLASS_KEY = 'registration_page_class'; // Class Reference of 'RegistrationPage.mjs'
+export const HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY = 'hearts_lobby_browser_class'; // Class Reference of 'HeartsLobbyBrowserPage.mjs'
+export const HEARTS_LOBBY_PAGE_CLASS_KEY = 'hearts_lobby_class'; // Class Reference of 'HeartsLobbyPage.mjs'
+export const HEARTS_GAME_PAGE_CLASS_KEY = 'hearts_game_class'; // Class Reference of 'HeartsGamePage.mjs'
+export const HEARTS_ROUND_OVER_PAGE_CLASS_KEY = 'hearts_round_over_class'; // Class Reference of 'HeartsRoundOverPage.mjs'
+export const HEARTS_MATCH_OVER_PAGE_CLASS_KEY = 'hearts_match_round_over_class'; // Class Reference of 'HeartsRoundOverPage.mjs'
+export const GUESS_NUMBER_PAGE_CLASS_KEY = 'guess_number_class' // TODO
 export const LOBBY_SESSION_INSTANCE_KEY = 'lobby_session_instance'; // Instance of 'GameSession.mjs'
 export const USER_IS_ADMIN_KEY = 'user_is_admin';   // Cache of wether the user is considered an admin
 export const TERMINAL_INSTANCE = 'terminal_instance';   // Instance of 'Terminal.mjs'
@@ -30,6 +31,7 @@ export const REFERENCES = {
     [LOBBY_SESSION_INSTANCE_KEY] : null,
     [HEARTS_ROUND_OVER_PAGE_CLASS_KEY] : null,
     [HEARTS_MATCH_OVER_PAGE_CLASS_KEY] : null,
+    [GUESS_NUMBER_PAGE_CLASS_KEY] : null,
     [USER_IS_ADMIN_KEY]: null,
     [TERMINAL_INSTANCE] : null,
     [REGISTRATION_CACHE] : {}

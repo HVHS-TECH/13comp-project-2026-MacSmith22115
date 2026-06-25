@@ -3,6 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebas
 import { getDatabase, set, ref, get, off, onValue, update, query, remove, orderByValue, onDisconnect } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 import {
+    PAGE_MANAGER_INSTANCE_KEY,
     REFERENCES,
     USER_IS_ADMIN_KEY
 } from '../core/ReferenceStorage.mjs';
@@ -41,9 +42,9 @@ export default class FirebaseIO {
     * Throws: N/A
     *****************************************************************/
     async update(
-        _path, 
-        _data, 
-        _pass = null, 
+        _path,
+        _data,
+        _pass = null,
         _fail = async (_error) => alert(`[FirebaseIO.mjs] Error: Check Console For Details`)
     ) {
         try {
@@ -82,6 +83,18 @@ export default class FirebaseIO {
             if (_callback) await _callback();
         } catch (_error) {
             console.error(`Error Removing Data @ ${_path}: ${_error}`);
+        }
+    }
+
+    
+    async logout(_callback = () => { }, _fallback = () => {}) {
+        try {
+            await signOut(getAuth());
+            _callback();
+        } catch (_err) {
+            console.error(`Error Signing User Out: ${_err}`);
+            _fallback();
+            alert(`Firebase Error: See Console`);
         }
     }
 
@@ -163,7 +176,7 @@ export default class FirebaseIO {
      * Returns: N/A
      * Throws: N/A
      * *****************************************************************/
-    async onClientDisconnect(_path){
+    async onClientDisconnect(_path) {
         const DB = this.#getDatabase();
         const REF = ref(DB, _path)
         const DISCONNECT = onDisconnect(REF);

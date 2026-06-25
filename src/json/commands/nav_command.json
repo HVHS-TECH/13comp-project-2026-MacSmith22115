@@ -1,0 +1,14 @@
+{
+    "args": {
+        "nav": {
+            "display": {
+                "-": {
+                    "*": "displayPage"
+                }
+            },
+            "list": {
+                "*": "listPages"
+            }
+        }
+    }
+}
