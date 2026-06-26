@@ -1,4 +1,3 @@
-// Imports 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import { getDatabase, set, ref, get, off, onValue, update, query, remove, orderByValue, onDisconnect } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
@@ -28,7 +27,6 @@ export default class FirebaseIO {
 
 
     /*****************************************************************
-    * update(_path, _data, _callback);
     * Description:
     *   -> Updates existing data in the database
     *   -> If data at the path was not existent, it is written
@@ -38,8 +36,6 @@ export default class FirebaseIO {
     *   -> '_data': Data to write
     *   -> '_pass': Optional Callback Function called on a sucessful update
     *   -> '_fail': Optional Callback function called on a error
-    * Returns: N/A
-    * Throws: N/A
     *****************************************************************/
     async update(
         _path,
@@ -58,13 +54,11 @@ export default class FirebaseIO {
     }
 
     /*****************************************************************
-    * read(_path);
     * Description:
     *   -> Reads and returns data at specified Path
     * Params: 
     *   -> '_path': Path to read.
     * Returns: Data, or Null.
-    * Throws: N/A
     *****************************************************************/
     async read(_path) {
         try {
@@ -76,6 +70,14 @@ export default class FirebaseIO {
         }
     }
 
+    
+    /*****************************************************************
+    * Description:
+    *   -> Attempts to delete data from _path in Firebase
+    * Params: 
+    *   -> '_path': Path to remove.
+    *   -> '_callback': Function to call once completion
+    *****************************************************************/
     async remove(_path, _callback = null) {
         try {
             const REF = ref(this.#getDatabase(), _path);
@@ -87,7 +89,14 @@ export default class FirebaseIO {
     }
 
     
-    async logout(_callback = () => { }, _fallback = () => {}) {
+    /*****************************************************************
+    * Description:
+    *   -> Logs the user out, de-authing them
+    * Params: 
+    *   -> '_callback': Function to call if logout was sucessful
+    *   -> '_fallback': Function to call if logout failed
+    *****************************************************************/
+    async logout(_callback = () => {}, _fallback = () => {}) {
         try {
             await signOut(getAuth());
             _callback();
@@ -99,13 +108,10 @@ export default class FirebaseIO {
     }
 
     /*****************************************************************
-     * authViaGoogle();
      * Description:
      *    -> Auths the user via a google account.
      *    -> Returns an object of user data
-     * Params: N/A
      * Returns: User's Data
-     * Throws: N/A
      * *****************************************************************/
     async authViaGoogle() {
         const PROVIDER = new GoogleAuthProvider();

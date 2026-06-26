@@ -8,6 +8,14 @@ import {
 } from "../core/ReferenceStorage.mjs";
 import Utils from "../core/Utils.mjs";
 
+/*****************************************************************
+* Description:
+*   -> Attempts to cache _input to REFERENCES under _field
+* Params:
+*   -> '_field': Name of key in REFERENCES to cache to
+*   -> '_input': Data to cache
+*   -> '_private': Wether the cache should be marked as private or public for database writing
+*****************************************************************/
 async function tryPutCache(_field, _input, _private = true) {
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
     const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
@@ -29,22 +37,55 @@ async function tryPutCache(_field, _input, _private = true) {
     return msg;
 }
 
+/*****************************************************************
+* Description:
+*   -> Called by running cmd 'register name -${input}'
+*   -> Replace ${input} with user-passed argument
+* Params:
+    -> '_args': Arr of Arguments, E.G ${input}
+*****************************************************************/
 export async function registerName(_args) {
     return tryPutCache('name', _args[0], false);
 }
 
+/*****************************************************************
+* Description:
+*   -> Called by running cmd 'register age -${input}'
+*   -> Replace ${input} with user-passed argument
+* Params:
+    -> '_args': Arr of Arguments, E.G ${input}
+*****************************************************************/
 export async function registerAge(_args) {
     return tryPutCache('age', _args[0]);
 }
 
+/*****************************************************************
+* Description:
+*   -> Called by running cmd 'register phone -${input}'
+*   -> Replace ${input} with user-passed argument
+* Params:
+    -> '_args': Arr of Arguments, E.G ${input}
+*****************************************************************/
 export async function registerPhone(_args) {
     return tryPutCache('phone', _args[0]);
 }
 
+/*****************************************************************
+* Description:
+*   -> Called by running cmd 'register colour -${input}'
+*   -> Replace ${input} with user-passed argument
+* Params:
+    -> '_args': Arr of Arguments, E.G ${input}
+*****************************************************************/
 export async function registerColour(_args) {
     return tryPutCache('colour', _args[0]);
 }
 
+/*****************************************************************
+* Description:
+*   -> Called by running cmd 'register confirm'
+*   -> Collects and collates cached data and writes it to Firebase
+*****************************************************************/
 export async function registerConfirm() {
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
     const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
@@ -84,6 +125,12 @@ export async function registerConfirm() {
     return msg;
 }
 
+/*****************************************************************
+* Description:
+*   -> Mass validates all values within _data, following validation rules.
+* Params:
+    -> '_data': Obj of data to validate
+*****************************************************************/
 async function validateData(_data) {
     const ERRORS = [];
     const NAME = _data.name ?? {};
@@ -105,6 +152,10 @@ async function validateData(_data) {
     return OBJ;
 }
 
+/*****************************************************************
+* Description:
+*   -> Checks if the user is authed
+*****************************************************************/
 async function isAuthed() {
     const USER = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
     return USER != null;

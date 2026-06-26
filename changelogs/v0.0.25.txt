@@ -1,0 +1,16 @@
+v0.0.25
+
+Log:
+ - Commands now remove multi-spaces before execution;
+ - Commands now have better error logic for when commands are partially wrong
+ - Commenting Code
+
+TODO NEXT:
+    -> Comment code
+    -> Clean/Remove Card Code?
+    -> Check user-inputs in CMDS have '-'
+    -> Typecheck inputs
+    -> details cmd updating outside of private/public???????
+
+THINK ABOUT:
+Firebase rules block cmd's, NEED WAY TO LOG THAT

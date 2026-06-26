@@ -15,9 +15,16 @@ import {
 } from '../core/ReferenceStorage.mjs';
 import Page from '../pages/Page.mjs';
 
+/*****************************************************************
+* Description:
+*   -> Called by running cmd 'nav display -${input}'
+*   -> Checks if _args[0] is a valid page id, then displays the page
+* Params:
+    -> '_args': Arr of Arguments, E.G ${input}
+        -> Passed Argument should be a page id.
+*****************************************************************/
 export async function displayPage(_args) {
     const PAGE_REFERNCE_KEY = _args[0];
-    console.log('RAN ');
     if (REFERENCES[PAGE_REFERNCE_KEY] == null){
         return "Argument Error: Parsed Argument Was Not A Valid ID";
     }
@@ -31,6 +38,12 @@ export async function displayPage(_args) {
     return "Displaying Selected Page..."
 }
 
+/*****************************************************************
+* Description:
+*   -> Called by running cmd 'nav list'
+*   -> Lists out the id's of all pages the user can navigate to with 'nav display' cmd
+*    -> Checks through REFERENCES for entries which are not blacklisted and are children of Page.mjs
+*****************************************************************/
 export async function listPages() {
     const PAGES = [];
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];

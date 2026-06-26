@@ -7,11 +7,19 @@
  *  -> Provides Common Static Utility Methods
  ****************************************************************/
 export default class Utils {
+
+    /*****************************************************************
+    * Description:
+    *   -> Static arrow function for validation of user-inputed names
+    * Params: 
+    *   -> '_input': Data to validate
+    *   -> '_errors': Arr of pre-existing errors, more are pushed to it if encounted
+    *****************************************************************/
     static NAME_VALIDATION_RULE = (_input, _errors) => {
         let valid = true;
         const REGEX = /^[^\s]+$/;
 
-        if (_input == null || _input == undefined){
+        if (_input == null || _input == undefined) {
             _errors.push("Nullpointer Exception: No Name Found");
             return false;
         }
@@ -33,23 +41,50 @@ export default class Utils {
         }
         return valid;
     };
+
+
+    /*****************************************************************
+    * Description:
+    *   -> Static arrow function for validation of user-inputed emails
+    * Params: 
+    *   -> '_input': Data to validate
+    *   -> '_errors': Arr of pre-existing errors, more are pushed to it if encounted
+    *****************************************************************/
     static EMAIL_VALIDATION_RULE = (_input, _errors) => {
         let valid = true;
-        if (_input == null || _input == undefined){
+        if (_input == null || _input == undefined) {
             _errors.push("Nullpointer Exception: No Email Found");
             return false;
         }
         return valid;
     };
+
+
+    /*****************************************************************
+    * Description:
+    *   -> Static arrow function for validation of user-inputed pfp's
+    * Params: 
+    *   -> '_input': Data to validate
+    *   -> '_errors': Arr of pre-existing errors, more are pushed to it if encounted
+    *****************************************************************/
     static PFP_VALIDATION_RULE = (_input, _errors) => {
-        if (_input == null || _input == undefined){
+        if (_input == null || _input == undefined) {
             _errors.push("Nullpointer Exception: No PfP Found");
             return false;
         }
         return true;
     };
+
+
+    /*****************************************************************
+    * Description:
+    *   -> Static arrow function for validation of user-inputed ages
+    * Params: 
+    *   -> '_input': Data to validate
+    *   -> '_errors': Arr of pre-existing errors, more are pushed to it if encounted
+    *****************************************************************/
     static AGE_VALIDATION_RULE = (_input, _errors) => {
-        if (_input == null || _input == undefined){
+        if (_input == null || _input == undefined) {
             _errors.push("Nullpointer Exception: No Age Found");
             return false;
         }
@@ -60,24 +95,59 @@ export default class Utils {
         }
         return valid;
     };
+
+
+    /*****************************************************************
+    * Description:
+    *   -> Static arrow function for validation of user-inputed colours
+    * Params: 
+    *   -> '_input': Data to validate
+    *   -> '_errors': Arr of pre-existing errors, more are pushed to it if encounted
+    *****************************************************************/
     static COLOUR_VALIDATION_RULE = (_input, _errors) => {
-        if (_input == null || _input == undefined){
+        if (_input == null || _input == undefined) {
             _errors.push("Nullpointer Exception: No Colour Found");
             return false;
         }
         return true;
     };
+
+
+    /*****************************************************************
+    * Description:
+    *   -> Static arrow function for validation of user-inputed phone numbers
+    * Params: 
+    *   -> '_input': Data to validate
+    *   -> '_errors': Arr of pre-existing errors, more are pushed to it if encounted
+    *****************************************************************/
     static PHONE_VALIDATION_RULE = (_input, _errors) => {
-        if (_input == null || _input == undefined){
+        if (_input == null || _input == undefined) {
             _errors.push("Nullpointer Exception: No Phone Found");
             return false;
         }
         return true;
     };
+
+    // List of cards to remove FIRST when dealing hearts, lower indexes are removed first
     static HEARTS_PRIORITY_REMOVAL_CARDS = ['d2', 'c2'];
-    static HEARTS_PROTECTED_CARDS = ['ha', 'hk', 'hq','hj', 'h10', 'h9', 'h8', 'h7', 'h6', 'h5', 'h4', 'h3', 'h2', 'sq'];
 
-
+    // List of Playing cards protected from removal when dealing hearts
+    static HEARTS_PROTECTED_CARDS = [
+        'ha',
+        'hk',
+        'hq',
+        'hj',
+        'h10',
+        'h9',
+        'h8',
+        'h7',
+        'h6',
+        'h5',
+        'h4',
+        'h3',
+        'h2',
+        'sq'
+    ];
 
     /*****************************************************************
     * getNextElement(_array, _index);
@@ -95,6 +165,22 @@ export default class Utils {
     }
 
     /*****************************************************************
+    * Description:
+    *   -> Checks if a json is found at _path
+    * Params: 
+    *   -> '_path': Str path (includes filename) to check if exists
+    *****************************************************************/
+    static async jsonExists(_path) {
+        const FULL_PATH = `./src/json/${_path}`;
+        try {
+            const RESPONSE = await fetch(FULL_PATH, { method: 'HEAD' });
+            return RESPONSE.ok;
+        } catch (_error) {
+            return false;
+        }
+    }
+
+    /*****************************************************************
    * fetchJSON(_path);
    * Description:
    *   -> Fetches and parses, and returns a JSON file on the client
@@ -103,17 +189,17 @@ export default class Utils {
    * Returns: JSON Object of fetched JSON
    * Throws: Error if encounted while fetching the JSON.
    *****************************************************************/
-    static async fetchJSON(_path) {
+    static async fetchJSON(_path, _logErrors = true) {
         const FULL_PATH = `./src/json/${_path}`;
         try {
             const RESPONSE = await fetch(FULL_PATH);
-            if (!RESPONSE.ok) {
+            if (!RESPONSE.ok && _logErrors) {
                 throw new Error(`Encounted HTTP Error Fetching JSON @ ${FULL_PATH}: ${RESPONSE.status}`);
             }
             const DATA = await RESPONSE.json();
             return DATA;
         } catch (_error) {
-            console.error(`Failed To Fetch Or Parse JSON @ ${FULL_PATH}: ${_error}`);
+            if (_logErrors) console.error(`Failed To Fetch Or Parse JSON @ ${FULL_PATH}: ${_error}`);
         }
     }
 

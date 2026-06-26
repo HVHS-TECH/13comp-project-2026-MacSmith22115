@@ -6,6 +6,11 @@ import {
     TERMINAL_INSTANCE
 } from '../core/ReferenceStorage.mjs';
 
+/*****************************************************************
+* Description:
+*   -> Called when running cmd 'hearts readyup'
+*   -> Marks you as ready, allowing the game to start once all other players are aswell
+*****************************************************************/
 export async function readyUp() {
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
     const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -25,6 +30,11 @@ export async function readyUp() {
     return msg;
 }
 
+/*****************************************************************
+* Description:
+*   -> Called by running cmd 'hearts unreadyUp'
+*   -> Marks you as unready to start the game.
+*****************************************************************/
 export async function unreadyUp() {
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
     const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];

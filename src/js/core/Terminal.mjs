@@ -13,8 +13,8 @@ export default class Terminal {
     #outputElement; // HTML element to append outputs to
     #inputElement;  // HTML element to read inputs from
     keydownListener = null; // Event listener, stored to unregister later.
-    #cmdHistory = [];
-    #cmdHistoryIndex = -1;
+    #cmdHistory = [];   // List of cmds used
+    #cmdHistoryIndex = -1; // Current index in list of used cmds, used for history scrolling
     static TERMINAL_INPUT_ELEMENT_ID = 'terminal_import';
     static TERMINAL_OUTPUT_ELEMENT_ID = 'terminal_output';
 
@@ -32,6 +32,7 @@ export default class Terminal {
     * Description:
     *   -> Registers an event listener to the page which listens for a keydown 
     *   -> If they key is the 'enter' key, read the value of #inputElement.
+    *   -> If the up/down arrows are pressed, you traverse up/down the cmd history
     *****************************************************************/
     registerKeydownListener() {
         this.keydownListener = (_event) => {
@@ -51,6 +52,13 @@ export default class Terminal {
         document.addEventListener('keydown', this.keydownListener);
     }
 
+    
+    /*****************************************************************
+    * Description:
+    *   -> Called to navigate through the cmd history with arrow keys
+    * Params: 
+    *   -> '_scrollUp': T/F indicating direction of history scroll
+    *****************************************************************/
     scrollCmdHistory(_scrollUp){
         const CURRENT_INDEX = this.#cmdHistoryIndex;
         const HISTORY = this.#cmdHistory;
@@ -178,13 +186,22 @@ export default class Terminal {
     *   -> Calls the command's function and prints the output to the terminal.
     *****************************************************************/
     async executeCmd(_input) {
-        const SPLIT_INPUT = _input.toLowerCase().split(' ');
-        const COMMAND_JSON = await Utils.fetchJSON(`commands/${SPLIT_INPUT[0]}_command.json`);
-        if (COMMAND_JSON == null) {
-            this.printStr(`Syntax Error: Command '${SPLIT_INPUT[0]}' Not Found`);
+        let SPLIT_INPUT = _input.toLowerCase().split(' ').filter(_entry => _entry.trim() !== '');
+        const CMD_JSON_PATH = `commands/${SPLIT_INPUT[0]}_command.json`;
+        const CURRENT_PAGE_ID = REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().getId();
+        
+        if (!(await Utils.jsonExists(CMD_JSON_PATH))){
+            this.printStr(`Syntax Error: Command ${SPLIT_INPUT} Not Found`);
             return;
         }
-        const CURRENT_PAGE_ID = REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().getId()
+
+        const COMMAND_JSON = await Utils.fetchJSON(CMD_JSON_PATH, false);
+
+        if (COMMAND_JSON == null) {
+            this.printStr(`Syntax Error: File For'${CMD_JSON_PATH}' Not Found`);
+            return;
+        }
+
         if (!COMMAND_JSON.pages == null) {
             if (!COMMAND_JSON.pages.includes(CURRENT_PAGE_ID)) {
                 this.printStr(`Location Error: Command '${SPLIT_INPUT[0]}' Can't Be User Here`);
@@ -192,13 +209,18 @@ export default class Terminal {
             }
         } else if (CURRENT_PAGE_ID === REFERENCES[LOGIN_PAGE_CLASS_KEY].ID) {
             if (SPLIT_INPUT[0] != 'login') {
-                this.printStr("All Commands Other Than 'login google' Are Blocked Before Login");
+                this.printStr("Permission Error: All Commands Other Than 'login google' Are Blocked Before Login");
                 return;
             }
         }
 
-
         const COMMAND = this.computeCommand(SPLIT_INPUT, COMMAND_JSON.args);
+
+        if (COMMAND == null){
+            this.printStr(`Syntax Error: Command '${SPLIT_INPUT.toString().replaceAll(',', ' ') }' Not Valid`);
+            return;
+        }
+           
         const FUNC = COMMAND.func;
         const USER_ARGS = COMMAND.captured;
         const RESULT = await (await import(`../commands/${SPLIT_INPUT[0]}Command.mjs`))[FUNC](USER_ARGS);
