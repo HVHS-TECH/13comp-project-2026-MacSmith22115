@@ -18,21 +18,21 @@ export const REGISTRATION_CACHE = 'registration_cache'; // Cache saved when regi
 
 // Object containing references to classes, instances and data.
 export const REFERENCES = {
-    [PAGE_MANAGER_INSTANCE_KEY] : null,
-    [FIREBASE_IO_INSTANCE_KEY] : null,
-    [LOGIN_PAGE_CLASS_KEY] : null,
-    [HOME_PAGE_CLASS_KEY] : null,
-    [PROFILE_PAGE_CLASS_KEY] : null,
-    [ADMIN_PAGE_CLASS_KEY] : null,
-    [REGISTRATION_PAGE_CLASS_KEY] : null,
-    [HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY] : null,
-    [HEARTS_LOBBY_PAGE_CLASS_KEY] : null,
-    [HEARTS_GAME_PAGE_CLASS_KEY] : null,
-    [LOBBY_SESSION_INSTANCE_KEY] : null,
-    [HEARTS_ROUND_OVER_PAGE_CLASS_KEY] : null,
-    [HEARTS_MATCH_OVER_PAGE_CLASS_KEY] : null,
-    [GUESS_NUMBER_PAGE_CLASS_KEY] : null,
+    [PAGE_MANAGER_INSTANCE_KEY]: null,
+    [FIREBASE_IO_INSTANCE_KEY]: null,
+    [LOGIN_PAGE_CLASS_KEY]: null,
+    [HOME_PAGE_CLASS_KEY]: null,
+    [PROFILE_PAGE_CLASS_KEY]: null,
+    [ADMIN_PAGE_CLASS_KEY]: null,
+    [REGISTRATION_PAGE_CLASS_KEY]: null,
+    [HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY]: null,
+    [HEARTS_LOBBY_PAGE_CLASS_KEY]: null,
+    [HEARTS_GAME_PAGE_CLASS_KEY]: null,
+    [LOBBY_SESSION_INSTANCE_KEY]: null,
+    [HEARTS_ROUND_OVER_PAGE_CLASS_KEY]: null,
+    [HEARTS_MATCH_OVER_PAGE_CLASS_KEY]: null,
+    [GUESS_NUMBER_PAGE_CLASS_KEY]: null,
     [USER_IS_ADMIN_KEY]: null,
-    [TERMINAL_INSTANCE] : null,
-    [REGISTRATION_CACHE] : {}
+    [TERMINAL_INSTANCE]: null,
+    [REGISTRATION_CACHE]: {}
 }

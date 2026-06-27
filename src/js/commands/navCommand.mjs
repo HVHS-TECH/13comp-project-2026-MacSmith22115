@@ -1,5 +1,5 @@
 import {
-    REFERENCES, 
+    REFERENCES,
     PAGE_MANAGER_INSTANCE_KEY,
     FIREBASE_IO_INSTANCE_KEY,
     LOBBY_SESSION_INSTANCE_KEY,
@@ -25,12 +25,12 @@ import Page from '../pages/Page.mjs';
 *****************************************************************/
 export async function displayPage(_args) {
     const PAGE_REFERNCE_KEY = _args[0];
-    if (REFERENCES[PAGE_REFERNCE_KEY] == null){
+    if (REFERENCES[PAGE_REFERNCE_KEY] == null) {
         return "Argument Error: Parsed Argument Was Not A Valid ID";
     }
     const CLASS_REFERENCE = REFERENCES[PAGE_REFERNCE_KEY];
 
-    if (!(CLASS_REFERENCE.prototype instanceof Page)){
+    if (!(CLASS_REFERENCE.prototype instanceof Page)) {
         return "Argument Error: Selected Page Not Valid";
     }
 
@@ -59,7 +59,7 @@ export async function listPages() {
     if (!IS_ADMIN) {
         BLACKLISTED_PAGES.push(REFERENCES[ADMIN_PAGE_CLASS_KEY]);
     }
-    for (const [_id, _reference] of Object.entries(REFERENCES)){
+    for (const [_id, _reference] of Object.entries(REFERENCES)) {
         if (!_reference) continue;
         const PROTOTYPE = _reference.prototype;
         if (!PROTOTYPE) continue;

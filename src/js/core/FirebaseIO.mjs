@@ -70,7 +70,7 @@ export default class FirebaseIO {
         }
     }
 
-    
+
     /*****************************************************************
     * Description:
     *   -> Attempts to delete data from _path in Firebase
@@ -88,7 +88,7 @@ export default class FirebaseIO {
         }
     }
 
-    
+
     /*****************************************************************
     * Description:
     *   -> Logs the user out, de-authing them
@@ -96,7 +96,7 @@ export default class FirebaseIO {
     *   -> '_callback': Function to call if logout was sucessful
     *   -> '_fallback': Function to call if logout failed
     *****************************************************************/
-    async logout(_callback = () => {}, _fallback = () => {}) {
+    async logout(_callback = () => { }, _fallback = () => { }) {
         try {
             await signOut(getAuth());
             _callback();

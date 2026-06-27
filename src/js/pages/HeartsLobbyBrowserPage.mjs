@@ -1,4 +1,3 @@
-// Imports
 import Page from "./Page.mjs";
 import {
     REFERENCES,
@@ -25,14 +24,10 @@ export default class HeartsLobbyBrowserPage extends Page {
     #lobbyListVersion = 0; // Prevents race condition
 
     /*****************************************************************
-    * onDisplay();
     * Description:
     *   -> Runs Initalization Code on the page being displayed
     *   -> In this instance the following is done:
     *       -> Event listeners are registered to the DB to build the server list and leaderboard
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
     *****************************************************************/
     async onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
@@ -47,29 +42,21 @@ export default class HeartsLobbyBrowserPage extends Page {
     }
 
     /*****************************************************************
-    * onRemove();
     * Description:
     *   -> Runs Code on the page being removed (not displayed)
     *   -> In this instance the following is done:
     *       -> DB listeners are unregistered.
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
     *****************************************************************/
     onRemove() {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#fbListeners);
     }
 
     /*****************************************************************
-    * buildServerList();
     * Description:
     *   -> Reads the server list from DB
     *   -> Removes All servers without players
     *   -> Itterates through remaining servers, for each one:
     *       -> Check if 
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
     *****************************************************************/
     async buildServerList() {
         const VERSION = ++this.#lobbyListVersion;
@@ -109,6 +96,12 @@ export default class HeartsLobbyBrowserPage extends Page {
         }
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Removes all current leaderboard entries
+    *   -> Then reads the database for scores
+    *   -> Then iterates through that and builds the leaderboard
+    *****************************************************************/
     async buildLeaderboard() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LEADERBOARD_READ = await FBIO.read('scoreboard/hearts') ?? {};
@@ -127,6 +120,12 @@ export default class HeartsLobbyBrowserPage extends Page {
 
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Reads the public data for the user associated with _uid
+    * Params:
+    *   -> '_uid': UID of user to get details of.
+    *****************************************************************/
     async getUserDetails(_uid) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const RESULT = await FBIO.read(`users/${_uid}/public`);
@@ -134,12 +133,8 @@ export default class HeartsLobbyBrowserPage extends Page {
     }
 
     /*****************************************************************
-    * getHTML();
     * Description:
     *   -> creates the html elements required for the page
-    * Params: N/A
-    * Returns: An html element
-    * Throws: N/A
     *****************************************************************/
     getHTML() {
         return this.createElement('div', {
@@ -229,12 +224,8 @@ export default class HeartsLobbyBrowserPage extends Page {
     }
 
     /*****************************************************************
-    * getId();
     * Description:
     *   -> Returns a string ID of the page
-    * Params: N/A
-    * Returns: String ID
-    * Throws: N/A
     *****************************************************************/
     getId() {
         return HeartsLobbyBrowserPage.ID;

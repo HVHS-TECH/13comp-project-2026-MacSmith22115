@@ -88,6 +88,11 @@ export default class Utils {
             _errors.push("Nullpointer Exception: No Age Found");
             return false;
         }
+        if (isNaN(_input)) {
+            _errors.push('Inputted Age Was Not A Number...')
+            return false;
+        }
+
         let valid = true;
         if (_input > 116) {
             _errors.push('Age Too Large, Please Enter Below 116');
@@ -150,7 +155,6 @@ export default class Utils {
     ];
 
     /*****************************************************************
-    * getNextElement(_array, _index);
     * Description:
     *   -> Gets the element with an index of (_index + 1)
     *   -> If _index is the last element, gets the first element.
@@ -158,7 +162,6 @@ export default class Utils {
     *   -> '_array': Target Array.
     *   -> '_index': Current Index, will get next element
     * Returns: Next Element in the array, 'looping' to the start if given the last index.
-    * Throws: N/A
     *****************************************************************/
     static getNextElement(_array, _index) {
         return _array[(_index + 1) % _array.length];
@@ -181,13 +184,11 @@ export default class Utils {
     }
 
     /*****************************************************************
-   * fetchJSON(_path);
    * Description:
    *   -> Fetches and parses, and returns a JSON file on the client
    * Params: 
    *   -> '_path': String Path of targeted JSON
    * Returns: JSON Object of fetched JSON
-   * Throws: Error if encounted while fetching the JSON.
    *****************************************************************/
     static async fetchJSON(_path, _logErrors = true) {
         const FULL_PATH = `./src/json/${_path}`;
@@ -204,40 +205,89 @@ export default class Utils {
     }
 
     /*****************************************************************
-   * getKeyByValue(_path);
    * Description:
    *   -> Finds the key associated with a given value in an object.
    * Params: 
    *   -> '_object': Object to search
    *   -> '_value': Value associated with key to find
    * Returns: Key associated with the given value
-   * Throws: N/A
    *****************************************************************/
     static async getKeyByValue(_object, _value) {
         return Object.keys(_object).find(_key => _object[_key] == _value);
     }
 
+
+    /*****************************************************************
+   * Description:
+   *   -> Sorts and arr of of objects by _field in an asending order.
+   * Params: 
+   *   -> '_array': Array of Objects to sort
+   *   -> '_field': Field of data in each object to sort by
+   * Returns: Array of sorted objects by _field
+   *****************************************************************/
     static sortObjsAscending(_array, _field) {
         return _array.sort((_a, _b) => _a[_field] - _b[_field]);
     }
 
+
+    /*****************************************************************
+   * Description:
+   *   -> Checks if _obj (object) has and fields (thus not an empty '{}')
+   * Params: 
+   *   -> '_obj': Object to check for keys
+   *****************************************************************/
     static isObjEmpty(_obj) {
         return Object.keys(_obj).length === 0;
     }
 
+
+    /*****************************************************************
+   * Description:
+   *   -> Takes an object and maps each key : value to [key, value], then pushed to an array
+   * Params: 
+   *   -> '_obj': Object to map key-value pairs to arrays
+   * Returns: Array of Arrays, where each inner array is [key, value]
+   *****************************************************************/
     static objToArr(_obj) {
         return Object.entries(_obj).map(([_key, _value]) => ({ _key, _value }));
     }
 
+
+    /*****************************************************************
+   * Description:
+   *   -> Checks if an object has _field associated with it
+   * Params: 
+   *   -> '_obj': Object to check for _field
+   *   -> '_field': key to check for in _obj
+   *****************************************************************/
     static objHasField(_obj, _field) {
         return Object.hasOwn(_obj, _field);
     }
 
-    static validateInput(_input, _errors = [], _ruleCallback = () => { return true }) {
+    /*****************************************************************
+   * Description:
+   *   -> Checks if _input is valid according to _ruleCallback
+   *   -> If _ruleCallback isn't passed as a param, this will ALWAYS result in 'true'
+   * Params: 
+   *   -> '_input': Any datatype, but this will be validated
+   *   -> '_errors': Array of errors, any more found will be pushed to here 
+   *   -> '_ruleCallback': function which will check if _input is valid, defaults to 'true'
+   * Returns: T/F, wether _input was valid
+   *****************************************************************/
+    static validateInput(_input, _errors = [], _ruleCallback = (_input, _errors) => { return true }) {
         const VALID = _ruleCallback(_input, _errors);
         return VALID;
     }
 
+    /*****************************************************************
+   * Description:
+   *   -> Creates an HTML element
+   * Params: 
+   *   -> '_tag': Str, typeof element, etc 'p', 'button', 'img', etc
+   *   -> '_attributes': Obj of things to add to the element, E.G 'textContent', 'onClick', etc
+   *   -> '_children': Arr of more HTML elements to append as children to this one
+   * Returns: HTML Element
+   *****************************************************************/
     static createElement(_tag, _attributes = {}, _children = []) {
         const ELEMENT = document.createElement(_tag);
         Object.assign(ELEMENT, _attributes);

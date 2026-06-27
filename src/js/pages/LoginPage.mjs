@@ -1,4 +1,3 @@
-// Imports
 import Page from './Page.mjs';
 import {
     REFERENCES,
@@ -14,23 +13,19 @@ import Terminal from '../core/Terminal.mjs';
  * LoginPage.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 28/2/26
  * @extends Page
  * Description: 
  *  -> The login page, used to auth with google
  ****************************************************************/
 export default class LoginPage extends Page {
-    static ID = 'login_page'; // Page ID
+    static ID = 'login_page';
     static #TERMINAL_INPUT_ID = 'terminal_input';
     static #TERMINAL_OUTPUT_ID = 'terminal_output';
 
     /*****************************************************************
-    * onDisplay();
     * Description:
-    *   -> Runs Code on the page being displayed
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
+    *   -> Runs Code on the page being displayed, in this intance it:  
+    *       -> Registers a new terminal and prints text to it
     *****************************************************************/
     async onDisplay() {
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
@@ -41,20 +36,22 @@ export default class LoginPage extends Page {
         REFERENCES[TERMINAL_INSTANCE].printStr("Use 'login google' To Continue...")
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being removed
+    *   -> In this instance the following is done:
+    *       -> Termianl instance is unregistered.
+    *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
     /*****************************************************************
-    * attemptLogin();
     * Description:
     *   -> Authenticats your google account, and collects user data.
     *   -> Reads database for the user's record
     *   -> Displays Homepage, or Registrations Page, depending if record was found
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
     *****************************************************************/
     async attemptLogin() {
         const FIREBASE_IO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
@@ -66,12 +63,8 @@ export default class LoginPage extends Page {
     }
 
     /*****************************************************************
-    * getHTML();
     * Description:
     *   -> creates the html elements required for the page
-    * Params: N/A
-    * Returns: An html element
-    * Throws: N/A
     *****************************************************************/
     getHTML() {
         return this.createElement('div', {
@@ -134,12 +127,8 @@ export default class LoginPage extends Page {
     }
 
     /*****************************************************************
-    * getId();
     * Description:
     *   -> Returns a string ID of the page
-    * Params: N/A
-    * Returns: String ID
-    * Throws: N/A
     *****************************************************************/
     getId() {
         return LoginPage.ID;

@@ -99,7 +99,7 @@ export async function registerConfirm() {
             const UID = FBIO.authedUser().uid;
             const PRIVATE = {};
             const PUBLIC = {};
-            for (const [_key, _value] of Object.entries(CACHE)){
+            for (const [_key, _value] of Object.entries(CACHE)) {
                 if (_value.private) {
                     PRIVATE[_key] = _value.val;
                 } else {

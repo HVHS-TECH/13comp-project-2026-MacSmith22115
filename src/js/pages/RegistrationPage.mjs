@@ -1,4 +1,3 @@
-// Imports
 import Page from './Page.mjs';
 import {
     REFERENCES,
@@ -14,21 +13,19 @@ import Terminal from '../core/Terminal.mjs';
  * RegistrationPage.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 28/2/26
  * @extends Page
  * Description: 
  *  -> The Registration Page collates information given and creats a user account.
  ****************************************************************/
 export default class RegistrationPage extends Page {
-    static ID = 'registration_page'; // Page ID
+    static ID = 'registration_page';
 
     /*****************************************************************
     * onDisplay();
     * Description:
-    *   -> Runs Code on the page being displayed
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
+    *   -> Runs Code on the page being displayed, in this instance it:
+    *       -> Caches initial registration data
+    *       -> Creates a new terminal instance and prints txt to it
     *****************************************************************/
     onDisplay() {
         const AUTH = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser(true);
@@ -42,18 +39,20 @@ export default class RegistrationPage extends Page {
         REFERENCES[TERMINAL_INSTANCE].printStr("Use 'register confirm' To Finalize Registration...");
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being removed
+    *   -> In this instance the following is done:
+    *       -> Termianl instance is unregistered.
+    *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
     /*****************************************************************
-    * getHTML();
     * Description:
     *   -> creates the html elements required for the page
-    * Params: N/A
-    * Returns: An html element
-    * Throws: N/A
     *****************************************************************/
     getHTML() {
         return this.createElement('div', {
@@ -90,7 +89,6 @@ export default class RegistrationPage extends Page {
                     ])
                 ]),
             ]),
-
             this.createElement('div', {
                 id: 'terminal-content'
             }, [
@@ -116,12 +114,8 @@ export default class RegistrationPage extends Page {
     }
 
     /*****************************************************************
-    * getId();
     * Description:
     *   -> Returns a string ID of the page
-    * Params: N/A
-    * Returns: String ID
-    * Throws: N/A
     *****************************************************************/
     getId() {
         return RegistrationPage.ID;

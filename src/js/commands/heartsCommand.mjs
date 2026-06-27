@@ -1,5 +1,5 @@
 import {
-    REFERENCES, 
+    REFERENCES,
     PAGE_MANAGER_INSTANCE_KEY,
     FIREBASE_IO_INSTANCE_KEY,
     LOBBY_SESSION_INSTANCE_KEY,
@@ -16,10 +16,10 @@ export async function readyUp() {
     const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
     const LOBBY_ID = LOBBY.getLobbyId();
     const USER = FBIO.authedUser();
-    
+
     const READY_FLAGS = await FBIO.read(`lobbies/${LOBBY_ID}/flags/ready`) ?? {};
     READY_FLAGS[USER.uid] = true;
-    
+
     let msg;
     await FBIO.update(`lobbies/${LOBBY_ID}/flags`, {
         ready: READY_FLAGS
@@ -40,10 +40,10 @@ export async function unreadyUp() {
     const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
     const LOBBY_ID = LOBBY.getLobbyId();
     const USER = FBIO.authedUser();
-    
+
     const READY_FLAGS = await FBIO.read(`lobbies/${LOBBY_ID}/flags/ready`) ?? {};
     delete READY_FLAGS[USER.uid];
-    
+
     let msg;
     await FBIO.update(`lobbies/${LOBBY_ID}/flags`, {
         ready: READY_FLAGS

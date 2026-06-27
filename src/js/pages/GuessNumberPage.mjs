@@ -13,54 +13,86 @@ import Utils from "../core/Utils.mjs";
 import Card from "../game/Card.mjs";
 import Terminal from "../core/Terminal.mjs";
 
+/*****************************************************************
+ * GuessNumberPage.mjs
+ * @author MacSmith22115
+ * Created: Term #2 2026
+ * @extends Page
+ * Description: 
+ *  -> Page for 2nd game, 'Guess the Number'
+ ****************************************************************/
 export default class GuessNumberPage extends Page {
     static ID = "guess_number_page";
 
-    static #RAND_NUM_KEY = 'randNum';
-    static #GUESSES_KEY = 'guesses';
+    static #RAND_NUM_KEY = 'randNum'; // Key of the random number in #gameData
+    static #GUESSES_KEY = 'guesses'; // Key of past guesses in #gameData
     #gameData = {}
 
-    createRandomNum(_min, _max){
+    /*****************************************************************
+    * Description:
+    *   -> Creats a random int between _min and _max
+    * Params:
+    *   -> '_min': Min int
+    *   -> '_max': Max int
+    *****************************************************************/
+    createRandomNum(_min, _max) {
         return Math.floor(Math.random() * (_max - _min + 1)) + _min;
     }
 
-    checkGuess(_guess){
+    /*****************************************************************
+    * Description:
+    *   -> Checks if the players guess matches the random number
+    * Params:
+    *   -> '_guess': the player inputted guess
+    *****************************************************************/
+    checkGuess(_guess) {
         const RAND_NUM = GuessNumberPage.safeGet(this.#gameData, GuessNumberPage.#RAND_NUM_KEY, () => {
             return -1;
         })
-        if (RAND_NUM === -1){
+        if (RAND_NUM === -1) {
             return 'Code Error: Random Number Not Found, Please Restart Page';
         }
-        
+
         const GUESSES = GuessNumberPage.safeGet(this.#gameData, GuessNumberPage.#GUESSES_KEY, () => []);
         GUESSES.push(_guess);
         this.#gameData[GuessNumberPage.#GUESSES_KEY] = GUESSES;
 
-        if (_guess != RAND_NUM){
-          return this.calcDiff(_guess, RAND_NUM);
+        if (_guess != RAND_NUM) {
+            return this.calcDiff(_guess, RAND_NUM);
         }
         this.onCorrectGuess();
         return "Enter 'gtn replay' To Start New Game";
     }
 
-    onCorrectGuess(){
+    /*****************************************************************
+    * Description:
+    *   -> Prints to the terminal that the user got the number right
+    *****************************************************************/
+    onCorrectGuess() {
         const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
-        const NUM = GuessNumberPage.safeGet(this.#gameData, GuessNumberPage.#RAND_NUM_KEY, () => -1);
+        const NUM = GuessNumberPage.safeGet(this.#gameData);
         const GUESS_COUNT = GuessNumberPage.safeGet(this.#gameData, GuessNumberPage.#GUESSES_KEY, () => []).length;
         TERMINAL.printStr(`You Guessed The Correct Number (${NUM}) In ${GUESS_COUNT} Guesses`);
     }
 
-    calcDiff(_guess, _rand){
+    /*****************************************************************
+    * Description:
+    *   -> Calculates the difference between the user guess and random number
+    * Params: 
+    *   -> '_guess': User-inputed guess
+    *   -> '_rand': Game generated Random number
+    *****************************************************************/
+    calcDiff(_guess, _rand) {
         const ABS_DIFF = Math.abs(_rand - _guess);
         let str = "Code Error: Seeing This Means Code Broke...";
-    
-        if (ABS_DIFF >= 30){
+
+        if (ABS_DIFF >= 30) {
             str = `Freezing`
-        } else if (ABS_DIFF >= 20){
+        } else if (ABS_DIFF >= 20) {
             str = `Cold`
-        } else if (ABS_DIFF >= 10){
+        } else if (ABS_DIFF >= 10) {
             str = `Warm`
-        } else if (ABS_DIFF >= 5){
+        } else if (ABS_DIFF >= 5) {
             str = `Hot`
         } else {
             str = `Burning`
@@ -68,29 +100,50 @@ export default class GuessNumberPage extends Page {
         return str;
     }
 
-    static safeGet(_obj, _field, _fallback = () => {return {}}){
+    /*****************************************************************
+    * Description:
+    *   -> tries to get _field from _obj
+    *   -> Returns the result of the func _fallback if _field was null in _obj
+    * Params:
+    *   -> '_obj': Object to try get _field from
+    *   -> '_field': Key to try get fron _obj
+    *   -> '_fallback': Func to call if _field was not found in _obj, used to return a set val
+    *****************************************************************/
+    static safeGet(_obj, _field, _fallback = () => { return -1 }) {
         return _obj[_field] ?? _fallback();
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being displayed
+    *   -> In this instance the following is done:
+    *       -> Register a new terminal, providing the input and output elements. 
+    *       -> Creats a random number and caches it
+    *****************************************************************/
     onDisplay() {
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
         REFERENCES[TERMINAL_INSTANCE].printStr("Use 'gtn guess' to guess the random number...")
-
         this.#gameData[GuessNumberPage.#RAND_NUM_KEY] = this.createRandomNum(1, 100);
-        
-        
-        console.log(GuessNumberPage.safeGet(this.#gameData, GuessNumberPage.#RAND_NUM_KEY, () => {
-            return -1;
-        }));
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being removed
+    *   -> In this instance the following is done:
+    *       -> Termianl instance is unregistered.
+    *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> creates the html elements required for the page
+    * Returns: An html element
+    *****************************************************************/
     getHTML() {
         return this.createElement('div', {
             className: 'terminal-window'
@@ -151,6 +204,10 @@ export default class GuessNumberPage extends Page {
         ])
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Returns a string ID of the page
+    *****************************************************************/
     getId() {
         return GuessNumberPage.ID;
     }

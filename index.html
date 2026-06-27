@@ -1,75 +1,82 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>13Comp</title>
-        <link rel="stylesheet" href="./src/css/core_terminal.css">
-        <link rel="stylesheet" href="./src/css/login_page.css">
-        <link rel="stylesheet" href="./src/css/registration_page.css">
-        <link rel="stylesheet" href="./src/css/home_page.css">
-        <link rel="stylesheet" href="./src/css/admin_page.css">
-        <link rel="stylesheet" href="./src/css/profile_page.css">
-        <link rel="stylesheet" href="./src/css/hearts_lobby_browser_page.css">
-        <link rel="stylesheet" href="./src/css/hearts_lobby_page.css">
-        <link rel="stylesheet" href="./src/css/hearts_game_page.css">
-    </head>
-    <body>
-        <main id="page"></main>
-        <script type="module">
-            import FirebaseIO from './src/js/core/FirebaseIO.mjs';
-            import PageManager from './src/js/core/PageManager.mjs';
-            import LoginPage from './src/js/pages/LoginPage.mjs';
-            import HomePage from './src/js/pages/HomePage.mjs';
-            import ProfilePage from './src/js/pages/ProfilePage.mjs';
-            import AdminPage from './src/js/pages/AdminPage.mjs';
-            import RegistrationPage from './src/js/pages/RegistrationPage.mjs';
-            import HeartsLobbyBrowserPage from './src/js/pages/HeartsLobbyBrowserPage.mjs';
-            import HeartsLobbyPage from './src/js/pages/HeartsLobbyPage.mjs';
-            import HeartsGamePage from './src/js/pages/HeartsGamePage.mjs';
-            import HeartsRoundOverPage from './src/js/pages/HeartsRoundOverPage.mjs';
-            import HeartsMatchOverPage from './src/js/pages/HeartsMatchOverPage.mjs';
-            import GuessNumberPage from './src/js/pages/GuessNumberPage.mjs';
-            import Deck from "./src/js/game/Deck.mjs";
-            import Card from "./src/js/game/Card.mjs";
-            import {
-                REFERENCES, 
-                PAGE_MANAGER_INSTANCE_KEY, 
-                FIREBASE_IO_INSTANCE_KEY, 
-                LOGIN_PAGE_CLASS_KEY, 
-                HOME_PAGE_CLASS_KEY,
-                PROFILE_PAGE_CLASS_KEY,
-                ADMIN_PAGE_CLASS_KEY,
-                REGISTRATION_PAGE_CLASS_KEY,
-                HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY,
-                HEARTS_LOBBY_PAGE_CLASS_KEY,
-                HEARTS_GAME_PAGE_CLASS_KEY,
-                HEARTS_ROUND_OVER_PAGE_CLASS_KEY,
-                HEARTS_MATCH_OVER_PAGE_CLASS_KEY,
-                GUESS_NUMBER_PAGE_CLASS_KEY
-            } from './src/js/core/ReferenceStorage.mjs';
 
-            REFERENCES[LOGIN_PAGE_CLASS_KEY] = LoginPage;
-            REFERENCES[HOME_PAGE_CLASS_KEY] = HomePage;
-            REFERENCES[PROFILE_PAGE_CLASS_KEY] = ProfilePage;
-            REFERENCES[ADMIN_PAGE_CLASS_KEY] = AdminPage;
-            REFERENCES[REGISTRATION_PAGE_CLASS_KEY] = RegistrationPage;
-            REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY]= HeartsLobbyBrowserPage;
-            REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY] = HeartsLobbyPage;
-            REFERENCES[HEARTS_GAME_PAGE_CLASS_KEY] = HeartsGamePage;
-            REFERENCES[HEARTS_ROUND_OVER_PAGE_CLASS_KEY] = HeartsRoundOverPage;
-            REFERENCES[HEARTS_MATCH_OVER_PAGE_CLASS_KEY] = HeartsMatchOverPage;
-            REFERENCES[GUESS_NUMBER_PAGE_CLASS_KEY] = GuessNumberPage;
-            REFERENCES[FIREBASE_IO_INSTANCE_KEY] = new FirebaseIO({
-                apiKey: "AIzaSyCAOPnMr_-61TVbtvgW3VWvh6af_KOPYwk",
-                authDomain: "comp-firebase-revision.firebaseapp.com",
-                projectId: "comp-firebase-revision",
-                storageBucket: "comp-firebase-revision.firebasestorage.app",
-                messagingSenderId: "1028621260717",
-                appId: "1:1028621260717:web:28f92cc83af73f2655f324",
-                databaseURL: "https://comp-firebase-revision-default-rtdb.firebaseio.com/"
-            });
-            REFERENCES[PAGE_MANAGER_INSTANCE_KEY] = new PageManager(document.getElementById('page'));
-            REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(LoginPage);
-            await Card.loadTemplates();
-        </script>
-    </body>
+<head>
+    <title>13Comp</title>
+    <link rel="stylesheet" href="./src/css/core_terminal.css">
+    <link rel="stylesheet" href="./src/css/login_page.css">
+    <link rel="stylesheet" href="./src/css/registration_page.css">
+    <link rel="stylesheet" href="./src/css/home_page.css">
+    <link rel="stylesheet" href="./src/css/admin_page.css">
+    <link rel="stylesheet" href="./src/css/profile_page.css">
+    <link rel="stylesheet" href="./src/css/hearts_lobby_browser_page.css">
+    <link rel="stylesheet" href="./src/css/hearts_lobby_page.css">
+    <link rel="stylesheet" href="./src/css/hearts_game_page.css">
+</head>
+
+<body>
+    <main id="page"></main>
+    <script type="module">
+        // Initial Importing of Classes
+        import FirebaseIO from './src/js/core/FirebaseIO.mjs';
+        import PageManager from './src/js/core/PageManager.mjs';
+        import LoginPage from './src/js/pages/LoginPage.mjs';
+        import HomePage from './src/js/pages/HomePage.mjs';
+        import ProfilePage from './src/js/pages/ProfilePage.mjs';
+        import AdminPage from './src/js/pages/AdminPage.mjs';
+        import RegistrationPage from './src/js/pages/RegistrationPage.mjs';
+        import HeartsLobbyBrowserPage from './src/js/pages/HeartsLobbyBrowserPage.mjs';
+        import HeartsLobbyPage from './src/js/pages/HeartsLobbyPage.mjs';
+        import HeartsGamePage from './src/js/pages/HeartsGamePage.mjs';
+        import HeartsRoundOverPage from './src/js/pages/HeartsRoundOverPage.mjs';
+        import HeartsMatchOverPage from './src/js/pages/HeartsMatchOverPage.mjs';
+        import GuessNumberPage from './src/js/pages/GuessNumberPage.mjs';
+        import Deck from "./src/js/game/Deck.mjs";
+        import Card from "./src/js/game/Card.mjs";
+        import {
+            REFERENCES,
+            PAGE_MANAGER_INSTANCE_KEY,
+            FIREBASE_IO_INSTANCE_KEY,
+            LOGIN_PAGE_CLASS_KEY,
+            HOME_PAGE_CLASS_KEY,
+            PROFILE_PAGE_CLASS_KEY,
+            ADMIN_PAGE_CLASS_KEY,
+            REGISTRATION_PAGE_CLASS_KEY,
+            HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY,
+            HEARTS_LOBBY_PAGE_CLASS_KEY,
+            HEARTS_GAME_PAGE_CLASS_KEY,
+            HEARTS_ROUND_OVER_PAGE_CLASS_KEY,
+            HEARTS_MATCH_OVER_PAGE_CLASS_KEY,
+            GUESS_NUMBER_PAGE_CLASS_KEY
+        } from './src/js/core/ReferenceStorage.mjs';
+
+        // Assigning Classes in REFERENCES
+        REFERENCES[LOGIN_PAGE_CLASS_KEY] = LoginPage;
+        REFERENCES[HOME_PAGE_CLASS_KEY] = HomePage;
+        REFERENCES[PROFILE_PAGE_CLASS_KEY] = ProfilePage;
+        REFERENCES[ADMIN_PAGE_CLASS_KEY] = AdminPage;
+        REFERENCES[REGISTRATION_PAGE_CLASS_KEY] = RegistrationPage;
+        REFERENCES[HEARTS_LOBBY_BROWSER_PAGE_CLASS_KEY] = HeartsLobbyBrowserPage;
+        REFERENCES[HEARTS_LOBBY_PAGE_CLASS_KEY] = HeartsLobbyPage;
+        REFERENCES[HEARTS_GAME_PAGE_CLASS_KEY] = HeartsGamePage;
+        REFERENCES[HEARTS_ROUND_OVER_PAGE_CLASS_KEY] = HeartsRoundOverPage;
+        REFERENCES[HEARTS_MATCH_OVER_PAGE_CLASS_KEY] = HeartsMatchOverPage;
+        REFERENCES[GUESS_NUMBER_PAGE_CLASS_KEY] = GuessNumberPage;
+        REFERENCES[FIREBASE_IO_INSTANCE_KEY] = new FirebaseIO({
+            apiKey: "AIzaSyCAOPnMr_-61TVbtvgW3VWvh6af_KOPYwk",
+            authDomain: "comp-firebase-revision.firebaseapp.com",
+            projectId: "comp-firebase-revision",
+            storageBucket: "comp-firebase-revision.firebasestorage.app",
+            messagingSenderId: "1028621260717",
+            appId: "1:1028621260717:web:28f92cc83af73f2655f324",
+            databaseURL: "https://comp-firebase-revision-default-rtdb.firebaseio.com/"
+        });
+        REFERENCES[PAGE_MANAGER_INSTANCE_KEY] = new PageManager(document.getElementById('page'));
+        REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(LoginPage);
+
+        // Reading Cards from Firebase
+        await Card.loadTemplates();
+    </script>
+</body>
+
 </html>

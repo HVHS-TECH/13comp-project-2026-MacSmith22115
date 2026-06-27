@@ -1,4 +1,3 @@
-// Imports
 import Page from "./Page.mjs";
 import {
     REFERENCES,
@@ -19,7 +18,6 @@ import Terminal from "../core/Terminal.mjs";
  * HeartsLobbyPage.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 7/3/26
  * @extends Page
  * Description: 
  *  -> Acts as an intermediatry page between the lobby browser and game of 'Hearts
@@ -31,6 +29,13 @@ export default class HeartsLobbyPage extends Page {
     #firebaseListeners;
     #players = {};
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code BEFORE the page is displayed
+    *   -> In this instance the following is done:
+    *       -> Lobby Cache is generated
+    *       -> Player public records are read for each player in the lobby
+    *****************************************************************/
     async preDisplay() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         await LOBBY.generateCache();
@@ -43,7 +48,10 @@ export default class HeartsLobbyPage extends Page {
         }
     }
 
-    
+    /*****************************************************************
+    * Description:
+    *   -> Reads the cached player and pushes them all to an array before returning it
+    *****************************************************************/
     async readPlayersDetails() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const PLAYERS = [];
@@ -51,6 +59,12 @@ export default class HeartsLobbyPage extends Page {
         return PLAYERS;
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Writes more data to Firebase which is required to the game to function
+    *   -> Called once all players are ready
+    *   -> Inlcudes dealing of hands, turns, etc
+    *****************************************************************/
     writeGameLobby() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
@@ -76,22 +90,13 @@ export default class HeartsLobbyPage extends Page {
         })
     }
 
-
-
-
-
     /*****************************************************************
-    * onDisplay();
     * Description:
-    *   -> Runs Code on the page being displayed
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
+    *   -> Runs Code on the page being displayed, in this instance it
+    *       -> Registers Firebase listeners,
+    *       -> Registers terminal instace
     *****************************************************************/
     onDisplay() {
-        /*document.getElementById(HeartsLobbyPage.#START_GAME_BUTTON_ID).onclick = () => {
-            this.writeGameLobby();
-        }*/
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         if (!LOBBY) return;
         this.#firebaseListeners = REFERENCES[FIREBASE_IO_INSTANCE_KEY].registerListeners({
@@ -121,11 +126,22 @@ export default class HeartsLobbyPage extends Page {
         REFERENCES[TERMINAL_INSTANCE].printStr("Game Will Start Once All Ready");
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being removed
+    *   -> In this instance the following is done:
+    *       -> Termianl instance is unregistered.
+    *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Updates Player indexes upon a player leavind
+    *   -> If player #2 of #4 leaves, this moved indexs 3-4 DOWN one to fill the gap
+    *****************************************************************/
     async updateIndexs() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const LOBBY_ID = LOBBY.getLobbyId();
@@ -141,6 +157,11 @@ export default class HeartsLobbyPage extends Page {
 
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Checks if the game should be started
+    *   -> ALL player need to be ready
+    *****************************************************************/
     async quearyStartGame() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -148,29 +169,29 @@ export default class HeartsLobbyPage extends Page {
         const PLAYERS_LIST = Object.values(CACHE.players);
         const LOBBY_FLAGS = CACHE.flags;
         const READY_LIST = Object.keys(LOBBY_FLAGS.ready ?? {});
-
         let shouldStart = true;
         PLAYERS_LIST.forEach(_player => {
             if (shouldStart && !READY_LIST.includes(_player)) {
                 shouldStart = false;
             }
         })
-
         if (shouldStart) {
             this.writeGameLobby();
         }
     }
 
-
+    /*****************************************************************
+    * Description:
+    *   -> On your client, Reads all player who are ready and renders them as such
+    * Params:
+    *   -> '_data': Object containing players who are maked as ready
+    *****************************************************************/
     async markPlayersReady(_data) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY_SESSION = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-
         if (LOBBY_SESSION == null) return;
-
         const LOBBY_ID = LOBBY_SESSION.getLobbyId();
         const PLAYERS_LIST = Object.values(await FBIO.read(`lobbies/${LOBBY_ID}/players`));
-
         document.querySelectorAll('.player-ready').forEach(_element => _element.remove());
         if (!_data) return;
         Object.keys(_data).forEach(_uid => {
@@ -182,25 +203,23 @@ export default class HeartsLobbyPage extends Page {
         })
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Renders the player slots which sit in the top-right of the page
+    *   -> Slots display player who are in the lobby
+    *****************************************************************/
     async renderSlots() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY_SESSION = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
-
         if (LOBBY_SESSION == null) return;
-
         const LOBBY_ID = LOBBY_SESSION.getLobbyId();
         const READ_RESULT = await FBIO.read(`lobbies/${LOBBY_ID}`);
-
         if (READ_RESULT == null) return;
-
         const PLAYERS = await this.readPlayersDetails();
         for (let i = 0; i < 4; i++) {
             const SLOT = document.getElementById(`player-${i}-slot`);
-
             if (!SLOT) continue;
-
             SLOT.classList.remove('unfilled-player-slot', 'filled-player-slot');
-
             while (SLOT.lastChild) {
                 SLOT.lastChild.remove();
             }
@@ -216,13 +235,9 @@ export default class HeartsLobbyPage extends Page {
     }
 
     /*****************************************************************
-* fillTable();
-* Description:
-*   -> Dynamicalls Fills out a list of players
-* Params: N/A
-* Returns: N/A
-* Throws: N/A
-*****************************************************************/
+    * Description:
+    *   -> Fills out a list of players in the lobby
+    *****************************************************************/
     async fillTable() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY_SESSION = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -244,12 +259,9 @@ export default class HeartsLobbyPage extends Page {
     }
 
     /*****************************************************************
-    * onRemove();
     * Description:
     *   -> Runs Code when the page is removed, use to unregister things.
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
+    *       -> In this instance it unregisteres the terminal and firebase listeners
     *****************************************************************/
     onRemove() {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#firebaseListeners);
@@ -258,12 +270,8 @@ export default class HeartsLobbyPage extends Page {
     }
 
     /*****************************************************************
-    * getHTML();
     * Description:
     *   -> creates the html elements required for the page
-    * Params: N/A
-    * Returns: An html element
-    * Throws: N/A
     *****************************************************************/
     getHTML() {
         return this.createElement('div', {
@@ -350,29 +358,11 @@ export default class HeartsLobbyPage extends Page {
                 ]),
             ])
         ])
-
-        /*return this.createElement('div', {}, [
-            this.createElement('h1', {
-                id: 'title',
-                textContent: 'You Are In A Lobby'
-            }),
-            this.createElement('ul', {
-                id: HeartsLobbyPage.#PLAYERS_LIST_ID
-            }),
-            this.createElement('button', {
-                id: HeartsLobbyPage.#START_GAME_BUTTON_ID,
-                textContent: 'Start Game'
-            })
-        ])*/
     }
 
     /*****************************************************************
-    * getId();
     * Description:
     *   -> Returns a string ID of the page
-    * Params: N/A
-    * Returns: String ID
-    * Throws: N/A
     *****************************************************************/
     getId() {
         return HeartsLobbyPage.ID;

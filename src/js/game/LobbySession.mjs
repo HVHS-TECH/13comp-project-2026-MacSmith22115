@@ -1,4 +1,3 @@
-// Imports
 import {
     REFERENCES,
     FIREBASE_IO_INSTANCE_KEY,
@@ -10,7 +9,6 @@ import Utils from "../core/Utils.mjs";
  * LobbySession.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 7/3/26
  * Description: 
  *      -> Contains Fields and Methods relating to an instance of a lobby
  *      -> Uses Firebase to mediate and store Lobbies
@@ -23,13 +21,10 @@ export default class LobbySession {
     #firebaseListeners;
 
     /*****************************************************************
-    * createLobby(_callback);
     * Description:
     *   -> Writes the lobby to the database
-    *   -> upon a secussful write, the '_Callback' is called.
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
+    * Params: 
+    *   -> '_callback': Function to be called after a sucessful lobby creation
     *****************************************************************/
     async createLobby(_callback = null) {
         const LOBBY_UUID = crypto.randomUUID();
@@ -54,6 +49,14 @@ export default class LobbySession {
         });
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Joins the user to an existing lobby
+    * Params: 
+    *   -> '_id': Id of lobby to join
+    *   -> '_callback': Function to be called after a sucessful lobby joining
+    *****************************************************************/
     async joinLobby(_id, _callback = null) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = await FBIO.read(`lobbies/${_id}`);
@@ -75,17 +78,34 @@ export default class LobbySession {
         }
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Removes the lobby from Firebase
+    *****************************************************************/
     async closeLobby() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         FBIO.remove(`lobbies/${this.getLobbyId()}`);
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Reads the data for the current hearts trick and returns it, or {} if null
+    *****************************************************************/
     async getTrickData() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = await FBIO.read(`lobbies/${this.getLobbyId()}`);
         return LOBBY.trickData ?? {};
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Returns all players current points from cache
+    * Params: 
+    *   -> '_sorted': Wether the points should be sorted, with lower points being first
+    *****************************************************************/
     async getPoints(_sorted = false) {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         let points = this.getLobbyCache().points ?? {};
@@ -98,6 +118,13 @@ export default class LobbySession {
         return points;
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Writes to the database the 'roundOver' flag as true
+    * Params: 
+    *   -> '_fbio': Instance of FirebaseIO.mjs
+    *****************************************************************/
     async markRoundOver(_fbio) {
         await this.getLobbyCache();
         await REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().writeRoundOver();
@@ -106,24 +133,49 @@ export default class LobbySession {
         })
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Checks if it it currently the client's turn
+    *****************************************************************/
     isMyTurn() {
         return this.getLobbyCache().turn == REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser().uid;
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Reads the entire lobby path, and caches it for quicker acess later
+    *****************************************************************/
     async generateCache() {
         if (this.#lobbyId != null) {
             this.#cache.lobby = await REFERENCES[FIREBASE_IO_INSTANCE_KEY].read(`lobbies/${this.#lobbyId}`);
         }
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Gets cached lobby data
+    *****************************************************************/
     getLobbyCache() {
         return this.#cache.lobby;
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Gets the ID of the lobby
+    *****************************************************************/
     getLobbyId() {
         return this.#lobbyId;
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Writes to the database things required for a new round of Hearts
+    *****************************************************************/
     resetRound() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = this;

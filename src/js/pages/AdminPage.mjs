@@ -1,4 +1,3 @@
-// Imports
 import Page from './Page.mjs';
 import {
     REFERENCES,
@@ -11,7 +10,7 @@ import {
 import Terminal from '../core/Terminal.mjs';
 
 /*****************************************************************
- * LoginPage.mjs
+ * AdminPage.mjs
  * @author MacSmith22115
  * Created: Term #2 2026
  * @extends Page
@@ -22,20 +21,16 @@ import Terminal from '../core/Terminal.mjs';
  ****************************************************************/
 export default class AdminPage extends Page {
     static ID = 'admin_page';
-    selectedUser = null;  
+    selectedUser = null;  // The activly selected user to execute CMD's on
 
-    
+
     /*****************************************************************
-    * onDisplay();
     * Description:
     *   -> Runs Code on the page being displayed
     *   -> In this instance the following is done:
     *       -> User is checked for admin flag in DB.
     *       -> If flag not found, user is sent back to home page.
     *       -> Register a new terminal, providing the input and output elements. 
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
     *****************************************************************/
     async onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
@@ -53,14 +48,10 @@ export default class AdminPage extends Page {
     }
 
     /*****************************************************************
-    * onRemove();
     * Description:
-    *   -> Runs Code on the page being removed (not displayed)
+    *   -> Runs Code on the page being removed
     *   -> In this instance the following is done:
     *       -> Termianl instance is unregistered.
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
     *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
@@ -68,24 +59,17 @@ export default class AdminPage extends Page {
     }
 
     /*****************************************************************
-    * getId();
     * Description:
     *   -> Returns a string ID of the page
-    * Params: N/A
-    * Returns: String ID
-    * Throws: N/A
     *****************************************************************/
     getId() {
         return AdminPage.ID;
     }
 
     /*****************************************************************
-    * getHTML();
     * Description:
     *   -> creates the html elements required for the page
-    * Params: N/A
     * Returns: An html element
-    * Throws: N/A
     *****************************************************************/
     getHTML() {
         return this.createElement('div', {

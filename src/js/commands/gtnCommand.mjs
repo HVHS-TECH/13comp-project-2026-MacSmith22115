@@ -1,5 +1,5 @@
 import {
-    REFERENCES, 
+    REFERENCES,
     PAGE_MANAGER_INSTANCE_KEY,
     FIREBASE_IO_INSTANCE_KEY,
     LOBBY_SESSION_INSTANCE_KEY,
@@ -18,10 +18,10 @@ import {
 export async function handleGuess(_args) {
     const PAGE = REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage();
     const GUESS = _args[0];
-    if (Number.isNaN(Number(GUESS))){
+    if (Number.isNaN(Number(GUESS))) {
         return "Type Error: Please Enter Guess As an Number"
     }
-    if (!isCorrectPage()){
+    if (!isCorrectPage()) {
         return "Location Error: "
     }
 
@@ -41,6 +41,6 @@ export async function replayGame() {
 * Description:
 *   -> Checks if the current page is an instance of GuessNumberPage.mjs
 *****************************************************************/
-function isCorrectPage(){
+function isCorrectPage() {
     return REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().getId() === REFERENCES[GUESS_NUMBER_PAGE_CLASS_KEY].ID;
 }

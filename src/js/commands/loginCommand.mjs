@@ -1,4 +1,4 @@
-import {REFERENCES, PAGE_MANAGER_INSTANCE_KEY} from '../core/ReferenceStorage.mjs';
+import { REFERENCES, PAGE_MANAGER_INSTANCE_KEY } from '../core/ReferenceStorage.mjs';
 
 /*****************************************************************
 * Description:

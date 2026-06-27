@@ -12,6 +12,15 @@ import Utils from "../core/Utils.mjs";
 import Deck from "../game/Deck.mjs";
 import Card from "../game/Card.mjs";
 import Terminal from "../core/Terminal.mjs";
+
+/*****************************************************************
+ * HeartsLobbyPage.mjs
+ * @author MacSmith22115
+ * Created: Term #2 2026
+ * @extends Page
+ * Description: 
+ *  -> Page shown once a match of hearts if over (somone has >= 100 points)
+ ****************************************************************/
 export default class HeartsMatchOverPage extends Page {
     static ID = 'hearts_match_over_page';
     static #HTML_TITLE_ID = 'main_title';
@@ -20,6 +29,13 @@ export default class HeartsMatchOverPage extends Page {
     #firebaseListeners;
     #players = {};
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code BEFORE the page is displayed
+    *   -> In this instance the following is done:
+    *       -> Lobby Cache is generated
+    *       -> Player public records are read for each player in the lobby
+    *****************************************************************/
     async preDisplay() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         await LOBBY.generateCache();
@@ -31,6 +47,12 @@ export default class HeartsMatchOverPage extends Page {
         }
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being displayed, in this instance it
+    *       -> Registers Firebase listeners,
+    *       -> Registers terminal instace
+    *****************************************************************/
     async onDisplay() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -55,9 +77,16 @@ export default class HeartsMatchOverPage extends Page {
         });
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Calculates how many points a player should recieve towards the leaderborad
+    * Params:
+    *   -> '_globalPointsObj': Object of in-game points recieved during the game
+    *   -> '_playerEntry': The individual player to get global points for
+    *****************************************************************/
     getRankedScore(_globalPointsObj, _playerEntry) {
         const MAP = new Map();
-        const PLAYER_COUNT = Object.entries(_globalPointsObj).length; // TODO: Won't count players who don't score... to fix
+        const PLAYER_COUNT = Object.entries(_globalPointsObj).length;
         let returnVal = 0;
         for (const [_placing, _data] of Object.entries(_globalPointsObj)) {
             if (_data === _playerEntry) {
@@ -67,6 +96,10 @@ export default class HeartsMatchOverPage extends Page {
         return returnVal;
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Writes the global points for each player to Firebase
+    *****************************************************************/
     async writeGlobalPoints() {
         const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
@@ -79,7 +112,6 @@ export default class HeartsMatchOverPage extends Page {
                 const PLAYER = _data.player;
                 const RANKED_SCORE = this.getRankedScore(POINTS, _data);
                 const OLD_TOTAL_SCORE = await FBIO.read(`/scoreboard/hearts/${PLAYER}`);
-
                 await FBIO.update(`/scoreboard/hearts`, {
                     [PLAYER]: (OLD_TOTAL_SCORE + RANKED_SCORE)
                 });
@@ -87,12 +119,15 @@ export default class HeartsMatchOverPage extends Page {
         }
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Prints stats such as points to the terminal
+    *****************************************************************/
     async printRoundStats() {
         const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         const SCORES = await LOBBY.getPoints(true);
         for (let placing = 0; placing < (SCORES.length); placing++) {
-
             const PLAYER_TO_SCORE_OBJ = SCORES[placing];
             const SCORE = PLAYER_TO_SCORE_OBJ.score;
             const PLAYER_UID = PLAYER_TO_SCORE_OBJ.player;
@@ -101,8 +136,10 @@ export default class HeartsMatchOverPage extends Page {
         }
     }
 
-
-
+    /*****************************************************************
+    * Description:
+    *   -> Prints complex HTML elements to the terminal, such as buttons
+    *****************************************************************/
     printElements() {
         REFERENCES[TERMINAL_INSTANCE].printElement(this.createElement("div", { id: "terminal-buttons-div" }));
         REFERENCES[TERMINAL_INSTANCE].printElement(
@@ -113,15 +150,23 @@ export default class HeartsMatchOverPage extends Page {
             }), "terminal-buttons-div");
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being removed
+    *   -> In this instance the following is done:
+    *       -> Termianl instance is unregistered.
+    *       -> Firebase listeners are unregistered
+    *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
-    }
-
-    onRemove() {
         REFERENCES[FIREBASE_IO_INSTANCE_KEY].unregisterListeners(this.#firebaseListeners);
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Closes the lobby and displays the homepage
+    *****************************************************************/
     async backToHomepage() {
         const LOBBY = REFERENCES[LOBBY_SESSION_INSTANCE_KEY];
         REFERENCES[LOBBY_SESSION_INSTANCE_KEY] = null;
@@ -129,6 +174,10 @@ export default class HeartsMatchOverPage extends Page {
         REFERENCES[PAGE_MANAGER_INSTANCE_KEY].displayPage(REFERENCES[HOME_PAGE_CLASS_KEY]);
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> creates the html elements required for the page
+    *****************************************************************/
     getHTML() {
         return this.createElement('div', {
             className: 'terminal-window'
@@ -189,6 +238,11 @@ export default class HeartsMatchOverPage extends Page {
         ])
     }
 
+
+    /*****************************************************************
+    * Description:
+    *   -> Returns a string ID of the page
+    *****************************************************************/
     getId() {
         return HeartsMatchOverPage.ID;
     }

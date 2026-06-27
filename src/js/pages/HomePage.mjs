@@ -17,26 +17,21 @@ import Terminal from '../core/Terminal.mjs';
  * HomePage.mjs
  * @author MacSmith22115
  * Created: Term #1 2026
- * Last Edited: 2/3/26
  * @extends Page
  * Description: 
  *  -> Used to access games, profile details, and more
  ****************************************************************/
 export default class HomePage extends Page {
-    static ID = 'home_page'; // Page ID
+    static ID = 'home_page';
     static #HEARTS_PLAY_BUTTON_ID = 'hearts_play';
     static #ADMIN_PAGE_BUTTON_ID = 'admin_page_btn';
     static #PROFILE_PAGE_BUTTON_ID = 'profile_page_btn';
-
     #cache = {};
 
     /*****************************************************************
-    * preDisplay();
     * Description:
-    *   -> Runs Code before the page is displayed
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
+    *   -> Runs Code before the page is displayed, in this instance it:
+    *       -> Caches the user and their admin status
     *****************************************************************/
     async preDisplay() {
         this.#cache.user = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
@@ -44,17 +39,13 @@ export default class HomePage extends Page {
     }
 
     /*****************************************************************
-    * onDisplay();
     * Description:
-    *   -> Runs Code on the page being displayed
-    * Params: N/A
-    * Returns: N/A
-    * Throws: N/A
+    *   -> Runs Code on the page being displayed, in this instance it:
+    *       -> Registers the termianl and prints some text and buttons to it.
     *****************************************************************/
     onDisplay() {
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
         const OUTPUT = document.getElementById(Terminal.TERMINAL_OUTPUT_ELEMENT_ID);
-
         REFERENCES[TERMINAL_INSTANCE] = new Terminal(INPUT, OUTPUT);
         const TERMINAL = REFERENCES[TERMINAL_INSTANCE];
         TERMINAL.printElement(this.createElement("img", {
@@ -102,18 +93,20 @@ export default class HomePage extends Page {
         }
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being removed
+    *   -> In this instance the following is done:
+    *       -> Termianl instance is unregistered.
+    *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
     /*****************************************************************
-    * getHTML();
     * Description:
     *   -> creates the html elements required for the page
-    * Params: N/A
-    * Returns: An html element
-    * Throws: N/A
     *****************************************************************/
     getHTML() {
         return this.createElement('div', {
@@ -156,14 +149,9 @@ export default class HomePage extends Page {
                     ])
                 ]),
             ]),
-
             this.createElement('div', {
                 id: 'terminal-content'
             }, [
-
-
-
-
                 this.createElement('div', {
                     id: Terminal.TERMINAL_OUTPUT_ELEMENT_ID
                 }),
@@ -186,12 +174,8 @@ export default class HomePage extends Page {
     }
 
     /*****************************************************************
-    * getId();
     * Description:
     *   -> Returns a string ID of the page
-    * Params: N/A
-    * Returns: String ID
-    * Throws: N/A
     *****************************************************************/
     getId() {
         return HomePage.ID;

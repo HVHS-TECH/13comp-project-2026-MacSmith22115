@@ -1,0 +1,12 @@
+v0.0.26
+
+Log:
+ - More Commenting Code
+ - General Code Cleaning
+ - Files formatted
+
+TODO NEXT:
+    -> Typecheck inputs
+
+THINK ABOUT:
+Firebase rules block cmd's, NEED WAY TO LOG THAT

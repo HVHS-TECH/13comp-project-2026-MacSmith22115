@@ -52,22 +52,20 @@ export default class Terminal {
         document.addEventListener('keydown', this.keydownListener);
     }
 
-    
+
     /*****************************************************************
     * Description:
     *   -> Called to navigate through the cmd history with arrow keys
     * Params: 
     *   -> '_scrollUp': T/F indicating direction of history scroll
     *****************************************************************/
-    scrollCmdHistory(_scrollUp){
+    scrollCmdHistory(_scrollUp) {
         const CURRENT_INDEX = this.#cmdHistoryIndex;
         const HISTORY = this.#cmdHistory;
         const DIR_VAL = _scrollUp ? 1 : -1;
         if (HISTORY[this.#cmdHistoryIndex + DIR_VAL] == null) return;
         this.#cmdHistoryIndex += DIR_VAL;
         this.getInputElement().value = HISTORY[this.#cmdHistoryIndex];
-        console.log(HISTORY);
-        console.log(`INDEX: ${this.#cmdHistoryIndex}`);
     }
 
     /*****************************************************************
@@ -189,8 +187,8 @@ export default class Terminal {
         let SPLIT_INPUT = _input.toLowerCase().split(' ').filter(_entry => _entry.trim() !== '');
         const CMD_JSON_PATH = `commands/${SPLIT_INPUT[0]}_command.json`;
         const CURRENT_PAGE_ID = REFERENCES[PAGE_MANAGER_INSTANCE_KEY].getMainPage().getId();
-        
-        if (!(await Utils.jsonExists(CMD_JSON_PATH))){
+
+        if (!(await Utils.jsonExists(CMD_JSON_PATH))) {
             this.printStr(`Syntax Error: Command ${SPLIT_INPUT} Not Found`);
             return;
         }
@@ -216,11 +214,11 @@ export default class Terminal {
 
         const COMMAND = this.computeCommand(SPLIT_INPUT, COMMAND_JSON.args);
 
-        if (COMMAND == null){
-            this.printStr(`Syntax Error: Command '${SPLIT_INPUT.toString().replaceAll(',', ' ') }' Not Valid`);
+        if (COMMAND == null) {
+            this.printStr(`Syntax Error: Command '${SPLIT_INPUT.toString().replaceAll(',', ' ')}' Not Valid`);
             return;
         }
-           
+
         const FUNC = COMMAND.func;
         const USER_ARGS = COMMAND.captured;
         const RESULT = await (await import(`../commands/${SPLIT_INPUT[0]}Command.mjs`))[FUNC](USER_ARGS);

@@ -9,9 +9,22 @@ import {
 } from '../core/ReferenceStorage.mjs';
 import Terminal from '../core/Terminal.mjs';
 
+/*****************************************************************
+ * LoginPage.mjs
+ * @author MacSmith22115
+ * Created: Term #2 2026
+ * @extends Page
+ * Description: 
+ *  -> The profile page, used to view and edit your own account details
+ ****************************************************************/
 export default class ProfilePage extends Page {
     static ID = "profile_page";
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being displayed, in this intance it:  
+    *       -> Registers a new terminal and prints text to it
+    *****************************************************************/
     async onDisplay() {
         const AUTH = REFERENCES[FIREBASE_IO_INSTANCE_KEY].authedUser();
         const INPUT = document.getElementById(Terminal.TERMINAL_INPUT_ELEMENT_ID);
@@ -20,15 +33,29 @@ export default class ProfilePage extends Page {
         REFERENCES[TERMINAL_INSTANCE].printStr(`Viewing Details for ${AUTH.name}`);
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Runs Code on the page being removed
+    *   -> In this instance the following is done:
+    *       -> Termianl instance is unregistered.
+    *****************************************************************/
     onRemove() {
         REFERENCES[TERMINAL_INSTANCE].unregisterKeydownListener();
         REFERENCES[TERMINAL_INSTANCE] = null;
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> Returns a string ID of the page
+    *****************************************************************/
     getId() {
         return ProfilePage.ID;
     }
 
+    /*****************************************************************
+    * Description:
+    *   -> creates the html elements required for the page
+    *****************************************************************/
     getHTML() {
         return this.createElement('div', {
             className: 'terminal-window'
@@ -64,7 +91,6 @@ export default class ProfilePage extends Page {
                     ])
                 ]),
             ]),
-
             this.createElement('div', {
                 id: 'terminal-content'
             }, [

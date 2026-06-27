@@ -29,15 +29,16 @@ async function attemptGet(_field, _private = true) {
 * Description:
 *   -> Will attempt to call upon FBIO to set the user's detail to Firebase
 *****************************************************************/
-async function attemptSet(_field, _data) {
+async function attemptSet(_field, _data, _private = true) {
     const FBIO = REFERENCES[FIREBASE_IO_INSTANCE_KEY];
     const USER = FBIO.authedUser(true);
     const ERRORS = [];
     const IS_VALID_INPUT = Utils.validateInput(_data, ERRORS, Utils[`${_field.toUpperCase()}_VALIDATION_RULE`]);
     let msg;
+    const PRIVATE_PATH_MODIFIER = _private ? 'private' : 'public';
     if (USER != null) {
         if (IS_VALID_INPUT) {
-            await FBIO.update(`users/${USER.uid.val}`, {
+            await FBIO.update(`users/${USER.uid.val}/${PRIVATE_PATH_MODIFIER}`, {
                 [_field]: _data
             })
             msg = `Updated User's ${_field}: ${_data}`;
@@ -107,7 +108,7 @@ export async function getPhone() {
     -> '_args': Arr of Arguments, E.G ${input}
 *****************************************************************/
 export async function setName(_args) {
-    return attemptSet('name', _args[0]);
+    return attemptSet('name', _args[0], false);
 }
 
 /*****************************************************************
@@ -129,7 +130,7 @@ export async function setEmail(_args) {
     -> '_args': Arr of Arguments, E.G ${input}
 *****************************************************************/
 export async function setPfp(_args) {
-    return attemptSet('pfp', _args[0]);
+    return attemptSet('pfp', _args[0], false);
 }
 
 /*****************************************************************
